@@ -1,0 +1,19 @@
+### Cryptex Perpetual futures
+
+#### Installation
+```commandline
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+git submodule update --init --recursive
+yarn install
+npx hardhat compile
+```
+
+### deploy contracts
+```commandline
+npx hardhat deploy --network arbitrumGoerli --tags Coordinator
+```
+set the env var COORDINATOR_ID with the value given by the previous command
+```commandline
+npx hardhat deploy --network arbitrumGoerli
+```

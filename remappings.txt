@@ -1,0 +1,11 @@
+@equilibria/perennial/=lib/perennial-mono/packages/perennial/
+@equilibria/perennial-oracle/=lib/perennial-mono/packages/perennial-oracle/
+@equilibria/root/=node_modules/@equilibria/root/
+@equilibria/emptyset-batcher/=node_modules/@equilibria/emptyset-batcher/
+@equilibria/perennial-vaults/=node_modules/@equilibria/perennial-vaults/
+@chainlink/=node_modules/@chainlink/
+@eth-optimism/=node_modules/@eth-optimism/
+@openzeppelin/=node_modules/@openzeppelin/
+ds-test/=lib/forge-std/lib/ds-test/src/
+forge-std/=lib/forge-std/src/
+hardhat/=node_modules/hardhat/
