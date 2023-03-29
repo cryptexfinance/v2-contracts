@@ -18,7 +18,10 @@ contract TestnetReserve is IEmptySetReserve {
 
     function mint(UFixed18 amount) external {
         USDC.pull(msg.sender, amount, true);
-        ERC20PresetMinterPauser(Token18.unwrap(DSU)).mint(msg.sender, UFixed18.unwrap(amount));
+        ERC20PresetMinterPauser(Token18.unwrap(DSU)).mint(
+            msg.sender,
+            UFixed18.unwrap(amount)
+        );
 
         uint256 pulledAmount = Math.ceilDiv(UFixed18.unwrap(amount), 1e12);
         emit Mint(msg.sender, UFixed18.unwrap(amount), pulledAmount);

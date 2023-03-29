@@ -1,33 +1,43 @@
-import { DeploymentsExtension } from 'hardhat-deploy/types'
-import { IController, IProduct, IProduct__factory } from '../types/generated'
+import { DeploymentsExtension } from "hardhat-deploy/types";
+import { IController, IProduct, IProduct__factory } from "../types/generated";
 
 export default async function reuseOrDeployProduct(
-  { deployments: { getOrNull, save, get } }: { deployments: DeploymentsExtension },
+  {
+    deployments: { getOrNull, save, get },
+  }: { deployments: DeploymentsExtension },
   coordinatorId: number,
   controller: IController,
   productImpl: String,
-  productInfo: IProduct.ProductInfoStruct,
+  productInfo: IProduct.ProductInfoStruct
 ): Promise<void> {
   const deploymentName = `Product_${productInfo.symbol}_${
-    productInfo.payoffDefinition.payoffDirection === 1 ? 'Short' : 'Long'
-  }`
-  let productAddress: string | undefined = (await getOrNull(deploymentName))?.address
+    productInfo.payoffDefinition.payoffDirection === 1 ? "Short" : "Long"
+  }`;
+  let productAddress: string | undefined = (await getOrNull(deploymentName))
+    ?.address;
 
   if (productAddress == null) {
-    process.stdout.write(`creating ${deploymentName}...`)
-    productAddress = await controller.callStatic.createProduct(coordinatorId, productInfo)
+    process.stdout.write(`creating ${deploymentName}...`);
+    productAddress = await controller.callStatic.createProduct(
+      coordinatorId,
+      productInfo
+    );
 
-    const receipt = await (await controller.createProduct(coordinatorId, productInfo)).wait(2)
+    const receipt = await (
+      await controller.createProduct(coordinatorId, productInfo)
+    ).wait(2);
     await save(deploymentName, {
       ...productImpl,
       address: productAddress,
       receipt,
-    })
+    });
 
-    process.stdout.write(`created at address ${productAddress} with ${receipt.gasUsed} gas\n`)
+    process.stdout.write(
+      `created at address ${productAddress} with ${receipt.gasUsed} gas\n`
+    );
   } else {
-    console.log(`reusing product ${deploymentName} at ${productAddress}`)
+    console.log(`reusing product ${deploymentName} at ${productAddress}`);
   }
 }
 
-export { reuseOrDeployProduct }
+export { reuseOrDeployProduct };

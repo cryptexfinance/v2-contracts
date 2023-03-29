@@ -9,16 +9,22 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"
 import "@equilibria/emptyset-batcher/interfaces/IBatcher.sol";
 
 contract MintDSU is Script {
-    ERC20PresetMinterPauser usdc = ERC20PresetMinterPauser(address(0x6775842AE82BF2F0f987b10526768Ad89d79536E));
-    ERC20PresetMinterPauser dsu = ERC20PresetMinterPauser(address(0x52C64b8998eB7C80b6F526E99E29ABdcC86B841b));
-    IEmptySetReserve reserve = IEmptySetReserve(address(0x0d49c416103Cbd276d9c3cd96710dB264e3A0c27));
+    ERC20PresetMinterPauser usdc =
+        ERC20PresetMinterPauser(
+            address(0x6775842AE82BF2F0f987b10526768Ad89d79536E)
+        );
+    ERC20PresetMinterPauser dsu =
+        ERC20PresetMinterPauser(
+            address(0x52C64b8998eB7C80b6F526E99E29ABdcC86B841b)
+        );
+    IEmptySetReserve reserve =
+        IEmptySetReserve(address(0x0d49c416103Cbd276d9c3cd96710dB264e3A0c27));
     uint256 deployerPrivateKey;
     address deployer;
 
-
     function setUp() public {
-      deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-      deployer = vm.addr(deployerPrivateKey);
+        deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        deployer = vm.addr(deployerPrivateKey);
     }
 
     function run() public {
