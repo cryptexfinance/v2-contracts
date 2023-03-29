@@ -1,4 +1,5 @@
-### Cryptex Perpetual futures
+### Cryptex Synthetic Derivatives 
+Cryptex Synthetic Derivatives is powered by [perennial](https://github.com/equilibria-xyz/perennial-mono) contracts.
 
 #### Installation
 ```commandline
