@@ -10,6 +10,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		return
 	}
 
+	if(!process.env.COORDINATOR_ID) {
+	    console.log("please set COORDINATOR_ID in env");
+	    return
+	}
+
     const { deployments, getNamedAccounts, ethers } = hre
     const { deploy, get, getOrNull, getNetworkName } = deployments
     const { deployer } = await getNamedAccounts()

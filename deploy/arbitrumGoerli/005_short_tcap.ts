@@ -28,6 +28,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         return
     }
 
+    if(!process.env.COORDINATOR_ID) {
+	    console.log("please set COORDINATOR_ID in env");
+	    return
+	}
+
     let name = "Total Market Cap"
     let symbol = "TCAP"
 
