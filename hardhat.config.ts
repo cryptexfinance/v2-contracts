@@ -20,7 +20,15 @@ const config: HardhatUserConfig = {
 			default: 0, // here this will by default take the first account as deployer
 		},
 	},
-    solidity: "0.8.15",
+    solidity: {
+		version: "0.8.17",
+		settings: {
+			optimizer: {
+				enabled: true,
+				runs: 200,
+			},
+		},
+	},
     paths: {
       sources: "./contracts",
       cache: "./cache_hardhat",

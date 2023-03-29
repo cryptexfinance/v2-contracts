@@ -1,0 +1,22 @@
+diff --git a/node_modules/@equilibria/perennial-oracle/contracts/ChainlinkFeedOracle.sol b/node_modules/@equilibria/perennial-oracle/contracts/ChainlinkFeedOracle.sol
+index 44418ed..a28744b 100644
+--- a/node_modules/@equilibria/perennial-oracle/contracts/ChainlinkFeedOracle.sol
++++ b/node_modules/@equilibria/perennial-oracle/contracts/ChainlinkFeedOracle.sol
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: Apache-2.0
+-pragma solidity 0.8.15;
++pragma solidity ^0.8.15;
+ 
+ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
+ import "./interfaces/IOracleProvider.sol";
+diff --git a/node_modules/@equilibria/perennial-oracle/contracts/types/ChainlinkRound.sol b/node_modules/@equilibria/perennial-oracle/contracts/types/ChainlinkRound.sol
+index aed3b62..f291f97 100644
+--- a/node_modules/@equilibria/perennial-oracle/contracts/types/ChainlinkRound.sol
++++ b/node_modules/@equilibria/perennial-oracle/contracts/types/ChainlinkRound.sol
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: Apache-2.0
+-pragma solidity 0.8.15;
++pragma solidity ^0.8.15;
+ 
+ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+ 
