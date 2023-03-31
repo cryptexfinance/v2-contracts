@@ -56,7 +56,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     oracle: (await get("TcapOracle")).address,
     maintenance: ethers.utils.parseEther("0.05"),
     fundingFee: ethers.utils.parseEther("0.05"),
-    makerFee: ethers.utils.parseEther("0.15"),
+    makerFee: ethers.utils.parseEther("0.0015"),
     takerFee: ethers.utils.parseEther("0.15"),
     positionFee: ethers.utils.parseEther("1"),
     makerLimit: ethers.utils.parseEther("4000"),
