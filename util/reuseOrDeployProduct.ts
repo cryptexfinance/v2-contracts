@@ -7,7 +7,6 @@ export default async function reuseOrDeployProduct(
   }: { deployments: DeploymentsExtension },
   coordinatorId: number,
   controller: IController,
-  productImpl: String,
   productInfo: IProduct.ProductInfoStruct
 ): Promise<void> {
   const deploymentName = `Product_${productInfo.symbol}_${
@@ -27,7 +26,6 @@ export default async function reuseOrDeployProduct(
       await controller.createProduct(coordinatorId, productInfo)
     ).wait(2);
     await save(deploymentName, {
-      ...productImpl,
       address: productAddress,
       receipt,
     });

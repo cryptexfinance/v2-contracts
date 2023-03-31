@@ -49,7 +49,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let symbol = "TCAP";
 
   let payoffProviderAddress = (await get("TcapPayoffProvider")).address;
-  let productImpl = "0x4a0f50b19b02AC927911C559629536B9a24d9314";
 
   const productInfo: IProduct.ProductInfoStruct = {
     name: name,
@@ -77,7 +76,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     hre,
     coordinatorID,
     controller,
-    productImpl,
     productInfo
   );
 
