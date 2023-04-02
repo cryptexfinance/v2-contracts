@@ -51,6 +51,11 @@ const config: HardhatUserConfig = {
       accounts: { mnemonic: mnemonic },
     },
   },
+  verify: {
+    etherscan: {
+        apiKey: process.env.ETHERSCAN_API_KEY as string,
+    }
+}
 };
 
 export default config;
