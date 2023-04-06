@@ -10,6 +10,7 @@ import "@equilibria/perennial/contracts/product/Product.sol";
 import "@equilibria/perennial-vaults/contracts/interfaces/IBalancedVault.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@equilibria/perennial/contracts/multiinvoker/MultiInvoker.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorProxyInterface.sol";
 
 
 contract TCAPPerennialForkTest is Test {
@@ -28,9 +29,12 @@ contract TCAPPerennialForkTest is Test {
         IEmptySetReserve(address(0x0d49c416103Cbd276d9c3cd96710dB264e3A0c27));
     MultiInvoker invoker =
         MultiInvoker(address(0xe72E82b672d7D3e206327C0762E9805fbFCBCa92));
+    address tcapOracleAddress = address(0x4763b84cdBc5211B9e0a57D5E39af3B3b2440012);
+    AggregatorProxyInterface oracle = AggregatorProxyInterface(tcapOracleAddress);
+
 
     ERC20PresetMinterPauser usdc = ERC20PresetMinterPauser(usdcAddress);
-    ERC20PresetMinterPauser dsu = ERC20PresetMinterPauser(dsu);
+    ERC20PresetMinterPauser dsu = ERC20PresetMinterPauser(dsuAddress);
 
     UFixed18 initialCollateral = UFixed18Lib.from(20000);
 
@@ -40,8 +44,8 @@ contract TCAPPerennialForkTest is Test {
     function setUp() external {
         vm.deal(userA, 30000 ether);
         vm.deal(userB, 30000 ether);
-        deal({token: address(usdc), to: userA, give: UFixed18.unwrap(UFixed18Lib.from(100000))});
-        deal({token: address(usdc), to: userB, give: UFixed18.unwrap(UFixed18Lib.from(100000))});
+        deal({token: address(usdc), to: userA, give: UFixed18.unwrap(UFixed18Lib.from(100000000))});
+        deal({token: address(usdc), to: userB, give: UFixed18.unwrap(UFixed18Lib.from(100000000))});
     }
 
     function testSetup() external {
@@ -97,5 +101,91 @@ contract TCAPPerennialForkTest is Test {
         long.openMake(UFixed18Lib.from(2));
         vm.prank(userB);
         long.openTake(UFixed18Lib.from(1));
+    }
+
+    function testMakerFees() external {
+        uint256 initialTreasuryBalance = UFixed18.unwrap(collateral.fees(cryptexArbitrumTreasury));
+        UFixed18 depositAmount = UFixed18Lib.from(10000);
+        depositWrapAndDeposit(userA, long, depositAmount);
+        assertEq(UFixed18.unwrap(collateral.fees(cryptexArbitrumTreasury)), initialTreasuryBalance);
+        vm.prank(userA);
+        long.openMake(UFixed18Lib.from(10));
+        mockNextOracleUpdate();
+        long.settle();
+        assertTrue(UFixed18.unwrap(collateral.fees(cryptexArbitrumTreasury)) > initialTreasuryBalance);
+    }
+
+    function mockNextOracleUpdate() public {
+        (
+          uint80 roundId,
+          int256 answer,
+          uint256 startedAt,
+          uint256 updatedAt,
+          uint80 answeredInRound
+        ) = oracle.latestRoundData();
+        uint80 nextRoundId = roundId + 1;
+        int256 nextAnswer = (answer * 101 / 100);
+        uint256 nextStartedAt = startedAt + 1000;
+        uint256 nextUpdatedAt = updatedAt + 1000;
+        uint80 nextAnsweredInRound = answeredInRound + 1;
+        vm.mockCall(
+            tcapOracleAddress,
+            abi.encodeWithSelector(oracle.latestRoundData.selector),
+            abi.encode(
+                nextRoundId,
+                nextAnswer,
+                nextStartedAt,
+                nextUpdatedAt,
+                nextAnsweredInRound
+            )
+        );
+        vm.mockCall(
+            tcapOracleAddress,
+            abi.encodeWithSelector(oracle.getRoundData.selector, nextRoundId),
+            abi.encode(
+                nextRoundId,
+                nextAnswer,
+                nextStartedAt,
+                nextUpdatedAt,
+                nextAnsweredInRound
+            )
+        );
+    }
+
+    function wrapUSDCToDSU(address account, UFixed18 amount) public {
+        vm.startPrank(userA);
+        usdc.approve(address(reserve), UFixed18.unwrap(amount));
+        reserve.mint(amount);
+        vm.stopPrank();
+    }
+
+    function testBalanceVaultClaim() external {
+        UFixed18 depositAmount = UFixed18Lib.from(1000);
+
+        wrapUSDCToDSU(userA, depositAmount);
+        vm.startPrank(userA);
+        dsu.approve(address(vault), UFixed18.unwrap(depositAmount));
+        vault.deposit(depositAmount, userA);
+        assertEq(
+            UFixed18.unwrap(collateral.collateral(address(vault), long)),
+            UFixed18.unwrap(collateral.collateral(address(vault), short))
+        );
+        assertEq(UFixed18.unwrap(vault.maxRedeem(userA)), 0);
+
+        mockNextOracleUpdate();
+        vault.sync();
+
+        assertTrue(UFixed18.unwrap(vault.maxRedeem(userA)) > 0);
+        vault.redeem(vault.maxRedeem(userA), userA);
+        assertEq(UFixed18.unwrap(vault.unclaimed(userA)), 0);
+
+        mockNextOracleUpdate();
+        vault.sync();
+
+        assertTrue(UFixed18.unwrap(vault.unclaimed(userA)) > 0);
+        vault.claim(userA);
+        assertEq(UFixed18.unwrap(vault.unclaimed(userA)), 0);
+
+        vm.stopPrank();
     }
 }
