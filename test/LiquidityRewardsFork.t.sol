@@ -88,7 +88,6 @@ contract LiquidityRewardsFork is Test {
     }
 
     function testStake_ShouldAccrueRewards_WhenTimePasses() public {
-        //setUp
         deal({
             token: address(ctx),
             to: userA,
@@ -96,14 +95,12 @@ contract LiquidityRewardsFork is Test {
         });
         vm.startPrank(userA);
         ctx.transfer(address(liquidityReward), 30000 ether);
-
         UFixed18 amount = vault.balanceOf(userA);
-
         vault.approve(address(liquidityReward), amount);
         liquidityReward.stake(UFixed18.unwrap(amount));
         assert(vault.balanceOf(userA).eq(UFixed18Lib.from(0)));
         assert(vault.balanceOf(address(liquidityReward)).eq(amount));
-        assertEq(liquidityReward.earned(userA),0);
+        assertEq(liquidityReward.earned(userA), 0);
         vm.stopPrank();
         //execution
         vm.prank(msg.sender);
@@ -111,16 +108,14 @@ contract LiquidityRewardsFork is Test {
         skip(3600);
         uint256 oldEarned = liquidityReward.earned(userA);
         skip(3600);
-        //assert
         uint256 earned = liquidityReward.earned(userA);
         assert(earned > oldEarned);
-    }
-
-    function testTransferVaultShares() external {
-        UFixed18 amount = vault.balanceOf(userA);
-        vm.startPrank(userA);
-        vault.transfer(userB, amount);
-        assert(vault.balanceOf(userA).eq(UFixed18Lib.from(0)));
-        assert(vault.balanceOf(userB).eq(amount));
+        vm.prank(userA);
+        liquidityReward.exit();
+        assertEq(liquidityReward.earned(userA), 0);
+        assert(
+            vault.balanceOf(address(liquidityReward)).eq(UFixed18Lib.from(0))
+        );
+        assert(vault.balanceOf(userA).eq(amount));
     }
 }
