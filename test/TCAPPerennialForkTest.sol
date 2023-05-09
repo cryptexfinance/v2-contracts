@@ -98,4 +98,52 @@ contract TCAPPerennialForkTest is Test {
         vm.prank(userB);
         long.openTake(UFixed18Lib.from(1));
     }
+
+    function testUpdateParams() external {
+        address owner = controller.owner(coordinatorId);
+        vm.startPrank(owner);
+        long.updateFundingFee(UFixed18Lib.from(0));
+        short.updateFundingFee(UFixed18Lib.from(0));
+        assertTrue(long.fundingFee().eq(UFixed18Lib.from(0)));
+        assertTrue(short.fundingFee().eq(UFixed18Lib.from(0)));
+
+        long.updateUtilizationCurve(JumpRateUtilizationCurve({
+                minRate: Fixed18Lib.from(int256(8)).div(Fixed18Lib.from(int256(100))).pack(),
+                maxRate: Fixed18Lib
+                    .from(int256(100))
+                    .div(Fixed18Lib.from(int256(100)))
+                    .pack(),
+                targetRate: Fixed18Lib
+                    .from(int256(30))
+                    .div(Fixed18Lib.from(int256(100)))
+                    .pack(),
+                targetUtilization: UFixed18Lib
+                    .from(80)
+                    .div(UFixed18Lib.from(100))
+                    .pack()
+            }));
+        short.updateUtilizationCurve(JumpRateUtilizationCurve({
+                minRate: Fixed18Lib.from(int256(8)).div(Fixed18Lib.from(int256(100))).pack(),
+                maxRate: Fixed18Lib
+                    .from(int256(100))
+                    .div(Fixed18Lib.from(int256(100)))
+                    .pack(),
+                targetRate: Fixed18Lib
+                    .from(int256(30))
+                    .div(Fixed18Lib.from(int256(100)))
+                    .pack(),
+                targetUtilization: UFixed18Lib
+                    .from(80)
+                    .div(UFixed18Lib.from(100))
+                    .pack()
+            }));
+        JumpRateUtilizationCurve memory longUtilizationCurve = long.utilizationCurve();
+        JumpRateUtilizationCurve memory shortUtilizationCurve = short.utilizationCurve();
+        assertTrue(
+            longUtilizationCurve.minRate.unpack().eq(Fixed18Lib.from(int256(8)).div(Fixed18Lib.from(int256(100))))
+        );
+        assertTrue(
+            shortUtilizationCurve.minRate.unpack().eq(Fixed18Lib.from(int256(8)).div(Fixed18Lib.from(int256(100))))
+        );
+    }
 }
