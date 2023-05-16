@@ -41,7 +41,7 @@ contract LiquidityRewardsFork is Test {
 
     UFixed18 initialCollateral = UFixed18Lib.from(20000);
 
-    address userA = address(0xc59975735ed4774b3Ee8479D0b5A26388B929a34);
+    address userA = address(0x173738);
     address userB = address(0x123123);
 
     function setUp() external {
@@ -49,13 +49,26 @@ contract LiquidityRewardsFork is Test {
         deal({
             token: address(usdc),
             to: userA,
-            give: UFixed18.unwrap(UFixed18Lib.from(100000))
+            give: 1000 ether
         });
         liquidityReward = new LiquidityReward(
             msg.sender,
             ctxAddress,
             address(vault)
         );
+        //deposit to vault
+        vm.startPrank(userA);
+        usdc.approve(address(invoker), type(uint256).max);
+        IMultiInvoker.Invocation[] memory invocations = new IMultiInvoker.Invocation[](1);
+        IMultiInvoker.Invocation memory invocation = IMultiInvoker.Invocation({
+            action: IMultiInvoker.PerennialAction.VAULT_WRAP_AND_DEPOSIT, //need to update perennial multi invoker as action is not there
+            args: abi.encode(userA, address(vault), 1000 ether)
+        });
+        invocations[0] = invocation;
+        invoker.invoke(invocations);
+        vm.stopPrank();
+        UFixed18 amount = vault.balanceOf(userA);
+        console.log(UFixed18.unwrap(amount));
     }
 
     function testStake_ShouldTransferShares() public {
@@ -66,9 +79,9 @@ contract LiquidityRewardsFork is Test {
         vault.approve(address(liquidityReward), amount);
         liquidityReward.stake(UFixed18.unwrap(amount));
         //assert
-        assert(vault.balanceOf(userA).eq(UFixed18Lib.from(0)));
+        assertTrue(vault.balanceOf(userA).eq(UFixed18Lib.from(0)));
         assertEq(liquidityReward.balanceOf(userA), (UFixed18.unwrap(amount)));
-        assert(vault.balanceOf(address(liquidityReward)).eq(amount));
+        assertTrue(vault.balanceOf(address(liquidityReward)).eq(amount));
     }
 
     function testWithdraw_ShouldTransferBackShares() public {
@@ -80,9 +93,9 @@ contract LiquidityRewardsFork is Test {
         //execution
         liquidityReward.withdraw(UFixed18.unwrap(amount));
         //assert
-        assert(vault.balanceOf(userA).eq(amount));
+        assertTrue(vault.balanceOf(userA).eq(amount));
         assertEq(liquidityReward.balanceOf(userA), 0);
-        assert(
+        assertTrue(
             vault.balanceOf(address(liquidityReward)).eq(UFixed18Lib.from(0))
         );
     }
@@ -91,7 +104,7 @@ contract LiquidityRewardsFork is Test {
         deal({
             token: address(ctx),
             to: userA,
-            give: UFixed18.unwrap(UFixed18Lib.from(30000 ether))
+            give: 30000 ether
         });
         vm.startPrank(userA);
         ctx.transfer(address(liquidityReward), 30000 ether);
@@ -100,7 +113,7 @@ contract LiquidityRewardsFork is Test {
         liquidityReward.stake(UFixed18.unwrap(amount));
         assert(vault.balanceOf(userA).eq(UFixed18Lib.from(0)));
         assert(vault.balanceOf(address(liquidityReward)).eq(amount));
-        assertEq(liquidityReward.earned(userA), 0);
+        assertTrue(liquidityReward.earned(userA) == 0);
         vm.stopPrank();
         //execution
         vm.prank(msg.sender);
@@ -113,9 +126,9 @@ contract LiquidityRewardsFork is Test {
         vm.prank(userA);
         liquidityReward.exit();
         assertEq(liquidityReward.earned(userA), 0);
-        assert(
+        assertTrue(
             vault.balanceOf(address(liquidityReward)).eq(UFixed18Lib.from(0))
         );
-        assert(vault.balanceOf(userA).eq(amount));
+        assertTrue(vault.balanceOf(userA).eq(amount));
     }
 }
