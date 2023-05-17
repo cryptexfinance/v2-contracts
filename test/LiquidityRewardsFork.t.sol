@@ -51,6 +51,7 @@ contract LiquidityRewardsFork is Test {
             to: userA,
             give: 1000 ether
         });
+
         liquidityReward = new LiquidityReward(
             msg.sender,
             ctxAddress,
@@ -67,7 +68,10 @@ contract LiquidityRewardsFork is Test {
         invocations[0] = invocation;
         invoker.invoke(invocations);
         vm.stopPrank();
+        ///should update somehow the values
         UFixed18 amount = vault.balanceOf(userA);
+        console.log(usdc.balanceOf(userA));
+
         console.log(UFixed18.unwrap(amount));
     }
 
@@ -82,6 +86,7 @@ contract LiquidityRewardsFork is Test {
         assertTrue(vault.balanceOf(userA).eq(UFixed18Lib.from(0)));
         assertEq(liquidityReward.balanceOf(userA), (UFixed18.unwrap(amount)));
         assertTrue(vault.balanceOf(address(liquidityReward)).eq(amount));
+        assertTrue(!vault.balanceOf(address(liquidityReward)).eq(UFixed18Lib.from(0)));
     }
 
     function testWithdraw_ShouldTransferBackShares() public {
@@ -98,6 +103,7 @@ contract LiquidityRewardsFork is Test {
         assertTrue(
             vault.balanceOf(address(liquidityReward)).eq(UFixed18Lib.from(0))
         );
+         assertTrue(!vault.balanceOf(address(liquidityReward)).eq(UFixed18Lib.from(0)));
     }
 
     function testStake_ShouldAccrueRewards_WhenTimePasses() public {
