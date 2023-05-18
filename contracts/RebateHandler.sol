@@ -7,20 +7,51 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 import "./interfaces/IRebateHandler.sol";
 
+/**
+ * @dev Contract that distributes rewards to users based on a merkle proof
+ * that is computed offchain and updated on a regular basis by the admin.
+ *
+ * The contract assumes that rebateToken balance will be transferred directly by the program creator.
+ *
+ * The merkle root can be updated by the admin only if block.timestamp >= _timeElapsedForUpdate.
+ *
+ * Rewards will be claimed on a first cum first serve basis until the total amount claimed
+ * is less than the cap set for the ongoing epoch.
+ *
+ * There is also a cap on the total number of users that can claim tokens in a given epoch.
+ * This is done because of gas limitation while resetting the addressExists variable.
+ *
+ * Admin can reclaim unused rewards after a certain amount of inactivity
+ */
 contract RebateHandler is IRebateHandler, Ownable {
     using SafeERC20 for IERC20;
 
+    /// @dev This mapping is used to check if an address has already claimed amount.
     mapping(address => bool) private addressExists;
+    /// @notice Address of the token used to give rebates.
     IERC20 public immutable rebateToken;
+    /// @notice List of addresses that have already claimed rebate for a given epoch.
     address[] public claimedAddresses;
+    /// @notice The merkle root of the distribution for the current epoch.
     bytes32 public merkleRoot;
+    /// @notice The time when the merkleRoot was updated.
     uint256 public lastUpdated;
+    /// @notice The maximum number of users that can claim rebates in a given epoch.
     uint256 public maxUsersToClaim;
+    /// @notice The time after which the merkle root can be updated.
     uint256 public timeElapsedForUpdate;
+    /// @notice The maximum amount of tokens that can be claimed in a given epoch.
     uint256 public maxAmountToClaim;
+    /// @notice the number of tokens claimed in a given epoch.
     uint256 public amountClaimed;
+    /// @notice the time after which an admin claim unused rewards.
     uint256 public timeToReclaimRewards;
 
+    /// @param rebateTokenAddress address of the token that will be used to pay rebates.
+    /// @param owner address of the owner.
+    /// @param _maxUsersToClaim Maximum numbers of users that can claim fees during an epoch.
+    /// @param _timeElapsedForUpdate The time after which the next distribution can be updated.
+    /// @param _timeToReclaimRewards The time after which an admin can claim unused rewards.
     constructor(
         address rebateTokenAddress,
         address owner,
@@ -93,6 +124,8 @@ contract RebateHandler is IRebateHandler, Ownable {
         rebateToken.safeTransfer(account, rebateToken.balanceOf(address(this)));
     }
 
+    /// @notice allows admin to update maxUsersToClaim variable.
+    /// @param _maxUsersToClaim new maxUsersToClaim value.
     function updateMaxUsersToClaim(
         uint256 _maxUsersToClaim
     ) external onlyOwner {
@@ -100,6 +133,8 @@ contract RebateHandler is IRebateHandler, Ownable {
         maxUsersToClaim = _maxUsersToClaim;
     }
 
+    /// @notice allows admin to update timeElapsedForUpdate variable
+    /// @param _timeElapsedForUpdate new timeElapsedForUpdate value.
     function updateTimeElapsedForUpdate(
         uint256 _timeElapsedForUpdate
     ) external onlyOwner {
@@ -107,6 +142,8 @@ contract RebateHandler is IRebateHandler, Ownable {
         timeElapsedForUpdate = _timeElapsedForUpdate;
     }
 
+    /// @notice allows admin to update timeToReclaimRewards variable
+    /// @param _timeToReclaimRewards new timeToReclaimRewards value.
     function updateTimeToReclaimRewards(
         uint256 _timeToReclaimRewards
     ) external onlyOwner {
