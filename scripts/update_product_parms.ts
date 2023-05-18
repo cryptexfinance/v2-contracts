@@ -1,7 +1,6 @@
 // run with
 // npx hardhat run ./scripts/update_product_params.ts --network arbitrum
 import hre, { deployments, network, hardhatArguments } from "hardhat";
-import { castVote, createProposal, executeProposal, fundMultisign, queueProposal } from "./utils";
 import { BigNumber } from "ethers";
 import { IProduct__factory, IController__factory } from "../typechain-types";
 
@@ -25,8 +24,8 @@ async function main() {
     console.log(`please make sure that the sender of these transactions is ${owner} \n`)
 
     // set funding fee to zero
-//     await long.updateFundingFee(parseEther("0"));
-//     await short.updateFundingFee(parseEther("0"));
+    await long.updateFundingFee(parseEther("0"));
+    await short.updateFundingFee(parseEther("0"));
     const newFundingFee = parseEther("0")
     console.log("-".repeat(50), "Transaction 1", "-".repeat(50));
     console.log(`long.updateFundingFee(${newFundingFee});`, `longContractAddress: ${longProductAddress}\n`);
@@ -35,8 +34,8 @@ async function main() {
 
 
     // change jumprate parameters
-//     await long.updateUtilizationCurve([parseEther("0.08"), parseEther("1"), parseEther("0.30"), parseEther("0.80")]);
-//     await short.updateUtilizationCurve([parseEther("0.08"), parseEther("1"), parseEther("0.30"), parseEther("0.80")]);
+    await long.updateUtilizationCurve([parseEther("0.08"), parseEther("1"), parseEther("0.30"), parseEther("0.80")]);
+    await short.updateUtilizationCurve([parseEther("0.08"), parseEther("1"), parseEther("0.30"), parseEther("0.80")]);
     const jumpRateParameters = [parseEther("0.08"), parseEther("1"), parseEther("0.30"), parseEther("0.80")];
     console.log("-".repeat(50), "Transaction 3", "-".repeat(50));
     console.log(`long.updateUtilizationCurve(${jumpRateParameters});`, `longContractAddress: ${longProductAddress}\n`);
