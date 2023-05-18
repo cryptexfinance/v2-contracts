@@ -5,22 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-interface IRebateHandler {
-    /// @notice Emitted when the merkle root is updated
-    event MerkleRootUpdated(bytes32 merkleRoot, uint256 maxAmountToClaim);
-    /// @notice Emitted when reward is paid to a user
-    event RewardPaid(address indexed user, uint256 reward);
-
-    function updateMerkleRoot(
-        bytes32 _merkleRoot,
-        uint256 _maxAmountToClaim
-    ) external;
-
-    function claimReward(bytes32[] memory proof, uint256 amount) external;
-
-    //    function claimReward(bytes32[] memory proof, address account, uint256 amount) external;
-    function reclaimUnusedReward(address account) external;
-}
+import "./interfaces/IRebateHandler.sol";
 
 contract RebateHandler is IRebateHandler, Ownable {
     using SafeERC20 for IERC20;
@@ -43,6 +28,10 @@ contract RebateHandler is IRebateHandler, Ownable {
         uint256 _timeElapsedForUpdate,
         uint256 _timeToReclaimRewards
     ) {
+        require(
+            _timeToReclaimRewards > _timeElapsedForUpdate,
+            "_timeToReclaimRewards less than timeElapsedForUpdate"
+        );
         rebateToken = IERC20(rebateTokenAddress);
         maxUsersToClaim = _maxUsersToClaim;
         timeElapsedForUpdate = _timeElapsedForUpdate;
@@ -50,6 +39,7 @@ contract RebateHandler is IRebateHandler, Ownable {
         transferOwnership(owner);
     }
 
+    /// @inheritdoc IRebateHandler
     function updateMerkleRoot(
         bytes32 _merkleRoot,
         uint256 _maxAmountToClaim
@@ -57,7 +47,7 @@ contract RebateHandler is IRebateHandler, Ownable {
         require(
             (block.timestamp - lastUpdated >= timeElapsedForUpdate) ||
                 (lastUpdated == uint256(0)),
-            "Cannot update before 24 hours"
+            "Cannot update before timeElapsedForUpdate"
         );
         require(
             rebateToken.balanceOf(address(this)) >= _maxAmountToClaim,
@@ -72,6 +62,7 @@ contract RebateHandler is IRebateHandler, Ownable {
         emit MerkleRootUpdated(_merkleRoot, _maxAmountToClaim);
     }
 
+    /// @inheritdoc IRebateHandler
     function claimReward(bytes32[] memory proof, uint256 amount) external {
         require(merkleRoot != bytes32(0), "Empty Merkle Root");
         require(!addressExists[msg.sender], "Rebate already claimed");
@@ -93,14 +84,38 @@ contract RebateHandler is IRebateHandler, Ownable {
         emit RewardPaid(msg.sender, ClaimableAmount);
     }
 
-    function reclaimUnusedReward(
-        address account
-    ) external onlyOwner {
+    /// @inheritdoc IRebateHandler
+    function reclaimUnusedReward(address account) external onlyOwner {
         require(
             (block.timestamp - lastUpdated >= timeToReclaimRewards),
-            "less than 3 days since last update"
+            "time less than timeToReclaimRewards"
         );
         rebateToken.safeTransfer(account, rebateToken.balanceOf(address(this)));
+    }
+
+    function updateMaxUsersToClaim(
+        uint256 _maxUsersToClaim
+    ) external onlyOwner {
+        require(_maxUsersToClaim != 0, "_maxUsersToClaim can't be 0");
+        maxUsersToClaim = _maxUsersToClaim;
+    }
+
+    function updateTimeElapsedForUpdate(
+        uint256 _timeElapsedForUpdate
+    ) external onlyOwner {
+        require(_timeElapsedForUpdate != 0, "_maxUsersToClaim can't be 0");
+        timeElapsedForUpdate = _timeElapsedForUpdate;
+    }
+
+    function updateTimeToReclaimRewards(
+        uint256 _timeToReclaimRewards
+    ) external onlyOwner {
+        require(_timeToReclaimRewards != 0, "_maxUsersToClaim can't be 0");
+        require(
+            _timeToReclaimRewards > timeElapsedForUpdate,
+            "value less than timeElapsedForUpdate"
+        );
+        timeToReclaimRewards = _timeToReclaimRewards;
     }
 
     function _resetAddressExists() internal {
@@ -121,29 +136,3 @@ contract RebateHandler is IRebateHandler, Ownable {
         return MerkleProof.verify(proof, merkleRoot, leaf);
     }
 }
-
-///1. Test when merkle root is empty (done)
-///2. Test lastUpdated (done)
-///3. updated maxUsersToClaim and check it can't be exceeded
-///4. Can claim rewards (done)
-///5. Can't claim more than once. (done)
-///6. Can claim partial amount left after distributing (done)
-///7. Test merkle root can be updated (done)
-///8. Test that addressExist resets (done)
-///9. Admin can reclaim amount left
-///10. Can't update merkle root before 24 hours (done)
-///11. Change admin
-///12. end the program (not doing)
-///13. Admin can claim left amount (duplicate 9)
-///14. Raises error when there are no funds. (done)
-/// 15. Change owner (duplicate 11)
-/// 16. Test Re-entrancy for token sending
-/// 17. Merkle root can onlu be updated by owner (done)
-/// 18. Update owner (duplicate 9, 15)
-/// 19. Updated other public variables (done)
-/// 20. Another user can't steal/claim
-/// 21. fails update when balance lower than maxAmountToClaim (done)
-/// 22. non admin cannot reclaimUnusedReward
-/// 23. Check overflow
-/// 24. Incorrect proof and amount (done)
-/// 25. test events (done)

@@ -186,10 +186,7 @@ contract RebateHandlerTest is Test {
             distributionData.amounts[1] +
             distributionData.amounts[2];
         vm.expectEmit(true, true, true, true, address(rebateHandler));
-        emit MerkleRootUpdated(
-            distributionData.merkleRoot,
-            maxAmountToClaim
-        );
+        emit MerkleRootUpdated(distributionData.merkleRoot, maxAmountToClaim);
         rebateHandler.updateMerkleRoot(
             distributionData.merkleRoot,
             maxAmountToClaim
@@ -260,7 +257,7 @@ contract RebateHandlerTest is Test {
                 distributions[0].amounts[1] +
                 distributions[0].amounts[2]
         );
-        vm.expectRevert("Cannot update before 24 hours");
+        vm.expectRevert("Cannot update before timeElapsedForUpdate");
         rebateHandler.updateMerkleRoot(
             distributions[1].merkleRoot,
             distributions[1].amounts[0] +
@@ -302,9 +299,7 @@ contract RebateHandlerTest is Test {
             uint256 initialUserBalance = rebateToken.balanceOf(user);
             vm.prank(user);
             vm.expectEmit(true, true, true, true, address(rebateHandler));
-            emit RewardPaid(
-                user, distributionData.amounts[i]
-            );
+            emit RewardPaid(user, distributionData.amounts[i]);
             rebateHandler.claimReward(
                 distributionData.proofs[i],
                 distributionData.amounts[i]
@@ -413,7 +408,8 @@ contract RebateHandlerTest is Test {
         vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
         vm.prank(owner);
-        uint256 maxAmountToClaim = distributions[0].amounts[0] + (distributions[0].amounts[1] / 2);
+        uint256 maxAmountToClaim = distributions[0].amounts[0] +
+            (distributions[0].amounts[1] / 2);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             maxAmountToClaim
@@ -429,7 +425,10 @@ contract RebateHandlerTest is Test {
             distributions[0].proofs[1],
             distributions[0].amounts[1]
         );
-        assertEq(rebateToken.balanceOf(user2), (distributions[0].amounts[1] / 2));
+        assertEq(
+            rebateToken.balanceOf(user2),
+            (distributions[0].amounts[1] / 2)
+        );
     }
 
     function testRevertInvalidProof() external {
@@ -474,7 +473,8 @@ contract RebateHandlerTest is Test {
         vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
         vm.prank(owner);
-        uint256 maxAmountToClaim = distributions[0].amounts[0] + distributions[0].amounts[1];
+        uint256 maxAmountToClaim = distributions[0].amounts[0] +
+            distributions[0].amounts[1];
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             maxAmountToClaim
@@ -495,5 +495,159 @@ contract RebateHandlerTest is Test {
             distributions[0].proofs[2],
             distributions[0].amounts[2]
         );
+    }
+
+    function testUpdateMaxUsersToClaim() external {
+        assertEq(rebateHandler.maxUsersToClaim(), defaultMaxUsersToClaim);
+        vm.prank(owner);
+        rebateHandler.updateMaxUsersToClaim(2);
+        assertEq(rebateHandler.maxUsersToClaim(), 2);
+    }
+
+    function testRevertUpdateMaxUsersToClaimByNonAdmin() external {
+        vm.prank(user1);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rebateHandler.updateMaxUsersToClaim(2);
+    }
+
+    function testRevertWhenClaimsExceedMaxUsers() external {
+        vm.prank(owner);
+        rebateHandler.updateMaxUsersToClaim(2);
+        vm.prank(owner);
+        rebateToken.transfer(address(rebateHandler), 1000 ether);
+        vm.prank(owner);
+        uint256 maxAmountToClaim = distributions[0].amounts[0] +
+            distributions[0].amounts[1] +
+            distributions[0].amounts[2];
+        rebateHandler.updateMerkleRoot(
+            distributions[0].merkleRoot,
+            maxAmountToClaim
+        );
+        vm.prank(user1);
+        rebateHandler.claimReward(
+            distributions[0].proofs[0],
+            distributions[0].amounts[0]
+        );
+        vm.prank(user2);
+        rebateHandler.claimReward(
+            distributions[0].proofs[1],
+            distributions[0].amounts[1]
+        );
+        vm.prank(user3);
+        vm.expectRevert("Exceeded Max number claims");
+        rebateHandler.claimReward(
+            distributions[0].proofs[2],
+            distributions[0].amounts[2]
+        );
+    }
+
+    function testAdminReclaimUnusedAwards() external {
+        vm.prank(owner);
+        rebateToken.transfer(address(rebateHandler), 4937 ether);
+        _checkDistributionWorks(distributions[0]);
+        uint256 amountClaimed = distributions[0].amounts[0] +
+            distributions[0].amounts[1] +
+            distributions[0].amounts[2];
+        uint256 amountLeft = 4937 ether - amountClaimed;
+        assertEq(rebateToken.balanceOf(address(rebateHandler)), amountLeft);
+        address reclaimAddress = address(0x53);
+        assertEq(rebateToken.balanceOf(reclaimAddress), 0);
+        vm.warp(block.timestamp + 3 days);
+        vm.prank(owner);
+        rebateHandler.reclaimUnusedReward(reclaimAddress);
+        assertEq(rebateToken.balanceOf(reclaimAddress), amountLeft);
+        assertEq(rebateToken.balanceOf(address(rebateHandler)), 0);
+    }
+
+    function testRevertNonAdminReclaimUnusedAwards() external {
+        vm.prank(owner);
+        rebateToken.transfer(address(rebateHandler), 4937 ether);
+        _checkDistributionWorks(distributions[0]);
+        vm.warp(block.timestamp + 3 days);
+        vm.prank(user1);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rebateHandler.reclaimUnusedReward(owner);
+    }
+
+    function testRevertReclaimUnusedAwardsTimeNotElapsed() external {
+        vm.prank(owner);
+        rebateToken.transfer(address(rebateHandler), 4937 ether);
+        _checkDistributionWorks(distributions[0]);
+        vm.prank(owner);
+        vm.expectRevert("time less than timeToReclaimRewards");
+        rebateHandler.reclaimUnusedReward(owner);
+    }
+
+    function testUpdateTimeElapsedForUpdate() external {
+        assertEq(rebateHandler.timeElapsedForUpdate(), 24 hours);
+        vm.prank(owner);
+        rebateHandler.updateTimeElapsedForUpdate(25 hours);
+        assertEq(rebateHandler.timeElapsedForUpdate(), 25 hours);
+    }
+
+    function testRevertNonAdminUpdateTimeElapsedForUpdate() external {
+        vm.prank(user1);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rebateHandler.updateTimeElapsedForUpdate(25 hours);
+    }
+
+    function testUpdateTimeElapsedForUpdateWorks() external {
+        assertEq(rebateHandler.timeElapsedForUpdate(), 24 hours);
+        vm.prank(owner);
+        rebateHandler.updateTimeElapsedForUpdate(25 hours);
+        vm.startPrank(owner);
+        rebateToken.transfer(address(rebateHandler), 1000 ether);
+        rebateHandler.updateMerkleRoot(
+            distributions[0].merkleRoot,
+            distributions[0].amounts[0] +
+                distributions[0].amounts[1] +
+                distributions[0].amounts[2]
+        );
+        vm.warp(block.timestamp + 24 hours);
+        vm.expectRevert("Cannot update before timeElapsedForUpdate");
+        rebateHandler.updateMerkleRoot(
+            distributions[1].merkleRoot,
+            distributions[1].amounts[0] +
+                distributions[1].amounts[1] +
+                distributions[1].amounts[2]
+        );
+        vm.warp(block.timestamp + 1 hours);
+        // next call should not not revert
+        rebateHandler.updateMerkleRoot(
+            distributions[1].merkleRoot,
+            distributions[1].amounts[0] +
+                distributions[1].amounts[1] +
+                distributions[1].amounts[2]
+        );
+        vm.stopPrank();
+    }
+
+    function testUpdateTimeToReclaimRewards() external {
+        assertEq(rebateHandler.timeToReclaimRewards(), 3 days);
+        vm.prank(owner);
+        rebateHandler.updateTimeToReclaimRewards(10 days);
+        assertEq(rebateHandler.timeToReclaimRewards(), 10 days);
+    }
+
+    function testRevertUpdateTimeToReclaimRewardsWhenLessThanElapsed()
+        external
+    {
+        vm.prank(owner);
+        vm.expectRevert("value less than timeElapsedForUpdate");
+        rebateHandler.updateTimeToReclaimRewards(23 hours);
+    }
+
+    function testNonAdminUpdateTimeToReclaimRewards() external {
+        vm.prank(user1);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rebateHandler.updateTimeToReclaimRewards(23 hours);
+    }
+
+    function testChangeAdmin() external {
+        address newAdmin = address(0x54);
+        assertEq(rebateHandler.owner(), owner);
+        vm.prank(owner);
+        rebateHandler.transferOwnership(newAdmin);
+        assertEq(rebateHandler.owner(), newAdmin);
     }
 }
