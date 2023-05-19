@@ -13,6 +13,7 @@ import "@equilibria/perennial/contracts/multiinvoker/MultiInvoker.sol";
 import "../contracts/LiquidityReward.sol";
 
 contract LiquidityRewardsFork is Test {
+    using stdStorage for StdStorage;
     LiquidityReward liquidityReward;
     uint256 coordinatorId = 2;
     Controller controller =
@@ -57,22 +58,18 @@ contract LiquidityRewardsFork is Test {
             ctxAddress,
             address(vault)
         );
-        //deposit to vault
-        vm.startPrank(userA);
-        usdc.approve(address(invoker), type(uint256).max);
-        IMultiInvoker.Invocation[] memory invocations = new IMultiInvoker.Invocation[](1);
-        IMultiInvoker.Invocation memory invocation = IMultiInvoker.Invocation({
-            action: IMultiInvoker.PerennialAction.VAULT_WRAP_AND_DEPOSIT, //need to update perennial multi invoker as action is not there
-            args: abi.encode(userA, address(vault), 1000 ether)
-        });
-        invocations[0] = invocation;
-        invoker.invoke(invocations);
-        vm.stopPrank();
-        ///should update somehow the values
-        UFixed18 amount = vault.balanceOf(userA);
-        console.log(usdc.balanceOf(userA));
 
-        console.log(UFixed18.unwrap(amount));
+          //setup
+        uint256 slot = stdstore
+            .target(address(vault))
+            .sig(("balanceOf(address)"))
+            .with_key(userA)
+            .find();
+        bytes32 loc = bytes32(slot);
+        bytes32 newBalance = bytes32(
+            abi.encode(1000 ether)
+        );
+        vm.store(address(vault), loc, newBalance);
     }
 
     function testStake_ShouldTransferShares() public {
@@ -103,7 +100,6 @@ contract LiquidityRewardsFork is Test {
         assertTrue(
             vault.balanceOf(address(liquidityReward)).eq(UFixed18Lib.from(0))
         );
-         assertTrue(!vault.balanceOf(address(liquidityReward)).eq(UFixed18Lib.from(0)));
     }
 
     function testStake_ShouldAccrueRewards_WhenTimePasses() public {
@@ -117,8 +113,8 @@ contract LiquidityRewardsFork is Test {
         UFixed18 amount = vault.balanceOf(userA);
         vault.approve(address(liquidityReward), amount);
         liquidityReward.stake(UFixed18.unwrap(amount));
-        assert(vault.balanceOf(userA).eq(UFixed18Lib.from(0)));
-        assert(vault.balanceOf(address(liquidityReward)).eq(amount));
+        assertTrue(vault.balanceOf(userA).eq(UFixed18Lib.from(0)));
+        assertTrue(vault.balanceOf(address(liquidityReward)).eq(amount));
         assertTrue(liquidityReward.earned(userA) == 0);
         vm.stopPrank();
         //execution
@@ -128,7 +124,7 @@ contract LiquidityRewardsFork is Test {
         uint256 oldEarned = liquidityReward.earned(userA);
         skip(3600);
         uint256 earned = liquidityReward.earned(userA);
-        assert(earned > oldEarned);
+        assertTrue(earned > oldEarned);
         vm.prank(userA);
         liquidityReward.exit();
         assertEq(liquidityReward.earned(userA), 0);
