@@ -12,6 +12,7 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"
 import "@equilibria/perennial/contracts/multiinvoker/MultiInvoker.sol";
 
 import "../contracts/mocks/ChainlinkTCAPAggregatorV3.sol";
+import "../contracts/LiquidityReward.sol";
 
 
 contract TCAPPerennialForkTest is Test {
@@ -33,6 +34,7 @@ contract TCAPPerennialForkTest is Test {
 
     ERC20PresetMinterPauser usdc = ERC20PresetMinterPauser(usdcAddress);
     ERC20PresetMinterPauser dsu = ERC20PresetMinterPauser(dsuAddress);
+    LiquidityReward lReward = LiquidityReward(0x393024Ba0ECB3a684C9D0bc2BC023B8DD9Ed21c1);
 
     UFixed18 initialCollateral = UFixed18Lib.from(20000);
 
@@ -47,6 +49,14 @@ contract TCAPPerennialForkTest is Test {
         usdc.approve(address(reserve), 100 ether);
         reserve.mint(UFixed18Lib.from(100000));
         vault.deposit(UFixed18Lib.from(1), userA);
+        assertEq(UFixed18.unwrap(vault.balanceOf(userA)), 0);
+        oracle.next();
+        vault.sync();
+        uint256 _balance = UFixed18.unwrap(vault.balanceOf(userA));
+        assertTrue(_balance > 0);
+        vault.approve(address(lReward), UFixed18Lib.from(_balance));
+        lReward.stake(_balance);
+        assertEq(UFixed18.unwrap(vault.balanceOf(userA)), 0);
         vm.stopPrank();
     }
 }

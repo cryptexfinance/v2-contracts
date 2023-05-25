@@ -12,9 +12,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy, get, getOrNull, getNetworkName } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const rewardToken = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8";
+  const rewardToken = "0x6775842AE82BF2F0f987b10526768Ad89d79536E";
   let stakingToken = (await get("TCAPVaultAlpha_Proxy")).address;
-  let cryptexMultisigAddress = "0x464e8536e552Be1a969d6334D0A317C1e022abbb";
+  let cryptexMultisigAddress = "0xEA8b3DF14B0bad2F6DD0Ed847DCc54Fc100e40C3";
 
   await deploy("LiquidityReward", {
     contract: "LiquidityReward",
