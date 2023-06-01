@@ -26,10 +26,12 @@ import "./interfaces/IRebateHandler.sol";
 contract RebateHandler is IRebateHandler, Ownable {
     using SafeERC20 for IERC20;
 
-    /// @dev This mapping is used to check if an address has already claimed amount.
-    mapping(address => bool) private addressExists;
+    /// @notice This mapping is used to check if an address has already claimed amount.
+    mapping(address => bool) public addressExists;
     /// @notice Address of the token used to give rebates.
     IERC20 public immutable rebateToken;
+    /// @notice Address that can update the merkel root
+    address public merkleRootAdmin;
     /// @notice List of addresses that have already claimed rebate for a given epoch.
     address[] public claimedAddresses;
     /// @notice The merkle root of the distribution for the current epoch.
@@ -47,6 +49,17 @@ contract RebateHandler is IRebateHandler, Ownable {
     /// @notice the time after which an admin claim unused rewards.
     uint256 public timeToReclaimRewards;
 
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyMerkleRootAdmin() {
+        require(
+            merkleRootAdmin == _msgSender(),
+            "caller can't update merkle root"
+        );
+        _;
+    }
+
     /// @param rebateTokenAddress address of the token that will be used to pay rebates.
     /// @param owner address of the owner.
     /// @param _maxUsersToClaim Maximum numbers of users that can claim fees during an epoch.
@@ -55,6 +68,7 @@ contract RebateHandler is IRebateHandler, Ownable {
     constructor(
         address rebateTokenAddress,
         address owner,
+        address _merkleRootAdmin,
         uint256 _maxUsersToClaim,
         uint256 _timeElapsedForUpdate,
         uint256 _timeToReclaimRewards
@@ -64,6 +78,7 @@ contract RebateHandler is IRebateHandler, Ownable {
             "_timeToReclaimRewards less than timeElapsedForUpdate"
         );
         rebateToken = IERC20(rebateTokenAddress);
+        merkleRootAdmin = _merkleRootAdmin;
         maxUsersToClaim = _maxUsersToClaim;
         timeElapsedForUpdate = _timeElapsedForUpdate;
         timeToReclaimRewards = _timeToReclaimRewards;
@@ -74,7 +89,7 @@ contract RebateHandler is IRebateHandler, Ownable {
     function updateMerkleRoot(
         bytes32 _merkleRoot,
         uint256 _maxAmountToClaim
-    ) external onlyOwner {
+    ) external onlyMerkleRootAdmin {
         require(
             (block.timestamp - lastUpdated >= timeElapsedForUpdate) ||
                 (lastUpdated == uint256(0)),
@@ -138,7 +153,7 @@ contract RebateHandler is IRebateHandler, Ownable {
     function updateTimeElapsedForUpdate(
         uint256 _timeElapsedForUpdate
     ) external onlyOwner {
-        require(_timeElapsedForUpdate != 0, "_maxUsersToClaim can't be 0");
+        require(_timeElapsedForUpdate != 0, "_timeElapsedForUpdate can't be 0");
         timeElapsedForUpdate = _timeElapsedForUpdate;
     }
 
@@ -147,7 +162,7 @@ contract RebateHandler is IRebateHandler, Ownable {
     function updateTimeToReclaimRewards(
         uint256 _timeToReclaimRewards
     ) external onlyOwner {
-        require(_timeToReclaimRewards != 0, "_maxUsersToClaim can't be 0");
+        require(_timeToReclaimRewards != 0, "_timeToReclaimRewards can't be 0");
         require(
             _timeToReclaimRewards > timeElapsedForUpdate,
             "value less than timeElapsedForUpdate"

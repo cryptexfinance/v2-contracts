@@ -13,9 +13,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts();
   const deployerSigner: SignerWithAddress = await ethers.getSigner(deployer);
 
-  const rebateTokenAddress = "0x912CE59144191C1204E64559FE8253a0e49E6548";
+  const rebateTokenAddress = "0x6775842AE82BF2F0f987b10526768Ad89d79536E";
   const owner = "0xEA8b3DF14B0bad2F6DD0Ed847DCc54Fc100e40C3";
-  const maxUsersToClaim = 1000;
+  // Please make sure that owner!=merkleRootAdmin on mainnet
+  const merkleRootAdmin = "0xEA8b3DF14B0bad2F6DD0Ed847DCc54Fc100e40C3";
+  const maxUsersToClaim = 50;
   const timeElapsedForUpdate = 24 * 60 * 60; // 24 hours
   const timeToReclaimRewards = 3 * 24 * 60 * 60; // 3 days
 
@@ -23,6 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [
       rebateTokenAddress,
       owner,
+      merkleRootAdmin,
       maxUsersToClaim,
       timeElapsedForUpdate,
       timeToReclaimRewards,
