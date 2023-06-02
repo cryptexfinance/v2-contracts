@@ -17,6 +17,7 @@ contract RebateHandlerTest is Test {
     event RewardPaid(address indexed user, uint256 reward);
 
     address owner = address(0x51);
+    address merkleRootAdmin = address(0x52);
     address user1 = address(0x1111111111111111111111111111111111111111);
     address user2 = address(0x2222222222222222222222222222222222222222);
     address user3 = address(0x3333333333333333333333333333333333333333);
@@ -142,6 +143,7 @@ contract RebateHandlerTest is Test {
         rebateHandler = new RebateHandler(
             address(rebateToken),
             owner,
+            merkleRootAdmin,
             defaultMaxUsersToClaim,
             24 hours,
             3 days
@@ -175,11 +177,12 @@ contract RebateHandlerTest is Test {
         assertEq(rebateHandler.timeElapsedForUpdate(), 24 hours);
         assertEq(rebateHandler.maxAmountToClaim(), 0);
         assertEq(rebateHandler.amountClaimed(), 0);
+        assertEq(rebateHandler.merkleRootAdmin(), merkleRootAdmin);
         assertEq(rebateHandler.owner(), owner);
     }
 
     function testVariablseAfterMerkleRootUpdate() external {
-        vm.startPrank(owner);
+        vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
         DistributionData memory distributionData = distributions[0];
         uint256 maxAmountToClaim = distributionData.amounts[0] +
@@ -187,11 +190,11 @@ contract RebateHandlerTest is Test {
             distributionData.amounts[2];
         vm.expectEmit(true, true, true, true, address(rebateHandler));
         emit MerkleRootUpdated(distributionData.merkleRoot, maxAmountToClaim);
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributionData.merkleRoot,
             maxAmountToClaim
         );
-        vm.stopPrank();
         // check is claimedAddresses is empty.
         // It should revert if we try to access any of its index if its empty
         vm.expectRevert();
@@ -203,8 +206,9 @@ contract RebateHandlerTest is Test {
     }
 
     function testVariablesAfterMultipleUpdates() external {
-        vm.startPrank(owner);
+        vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 4000 ether);
+        vm.startPrank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             distributions[0].amounts[0] +
@@ -236,21 +240,22 @@ contract RebateHandlerTest is Test {
         uint256 balanceNeeded = distributions[0].amounts[0] +
             distributions[0].amounts[1] +
             distributions[0].amounts[2];
-        vm.startPrank(owner);
+        vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), balanceNeeded - 1);
         vm.expectRevert("Balance less than maxAmountToClaim");
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             distributions[0].amounts[0] +
                 distributions[0].amounts[1] +
                 distributions[0].amounts[2]
         );
-        vm.stopPrank();
     }
 
     function testRevertWhenUpdateTimeNotElapsed() external {
-        vm.startPrank(owner);
+        vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
+        vm.startPrank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             distributions[0].amounts[0] +
@@ -270,7 +275,7 @@ contract RebateHandlerTest is Test {
     function testRevertWhenUpdaterNotAdmin() external {
         vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert("caller can't update merkle root");
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             distributions[0].amounts[0] +
@@ -282,7 +287,7 @@ contract RebateHandlerTest is Test {
     function _checkDistributionWorks(
         DistributionData memory distributionData
     ) internal {
-        vm.prank(owner);
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributionData.merkleRoot,
             distributionData.amounts[0] +
@@ -297,6 +302,7 @@ contract RebateHandlerTest is Test {
         for (uint256 i = 0; i < defaultMaxUsersToClaim; i++) {
             address user = users[i];
             uint256 initialUserBalance = rebateToken.balanceOf(user);
+            assertFalse(rebateHandler.addressExists(user));
             vm.prank(user);
             vm.expectEmit(true, true, true, true, address(rebateHandler));
             emit RewardPaid(user, distributionData.amounts[i]);
@@ -304,6 +310,7 @@ contract RebateHandlerTest is Test {
                 distributionData.proofs[i],
                 distributionData.amounts[i]
             );
+            assertTrue(rebateHandler.addressExists(user));
             assertEq(
                 rebateToken.balanceOf(user),
                 distributionData.amounts[i] + initialUserBalance
@@ -355,7 +362,7 @@ contract RebateHandlerTest is Test {
         uint256 maxAmountToClaim = distributions[1].amounts[0] +
             distributions[1].amounts[1] +
             distributions[1].amounts[2];
-        vm.prank(owner);
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[1].merkleRoot,
             maxAmountToClaim
@@ -386,7 +393,7 @@ contract RebateHandlerTest is Test {
         uint256 maxAmountToClaim = distributions[0].amounts[0] +
             distributions[0].amounts[1] +
             distributions[0].amounts[2];
-        vm.prank(owner);
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             maxAmountToClaim
@@ -407,9 +414,9 @@ contract RebateHandlerTest is Test {
     function testReceivePartialAmountLeft() external {
         vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
-        vm.prank(owner);
         uint256 maxAmountToClaim = distributions[0].amounts[0] +
             (distributions[0].amounts[1] / 2);
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             maxAmountToClaim
@@ -437,7 +444,7 @@ contract RebateHandlerTest is Test {
         uint256 maxAmountToClaim = distributions[0].amounts[0] +
             distributions[0].amounts[1] +
             distributions[0].amounts[2];
-        vm.prank(owner);
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             maxAmountToClaim
@@ -456,7 +463,7 @@ contract RebateHandlerTest is Test {
         uint256 maxAmountToClaim = distributions[0].amounts[0] +
             distributions[0].amounts[1] +
             distributions[0].amounts[2];
-        vm.prank(owner);
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             maxAmountToClaim
@@ -472,9 +479,9 @@ contract RebateHandlerTest is Test {
     function testRevertAfterAllRewardsClaimed() external {
         vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
-        vm.prank(owner);
         uint256 maxAmountToClaim = distributions[0].amounts[0] +
             distributions[0].amounts[1];
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             maxAmountToClaim
@@ -515,10 +522,10 @@ contract RebateHandlerTest is Test {
         rebateHandler.updateMaxUsersToClaim(2);
         vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
-        vm.prank(owner);
         uint256 maxAmountToClaim = distributions[0].amounts[0] +
             distributions[0].amounts[1] +
             distributions[0].amounts[2];
+        vm.prank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             maxAmountToClaim
@@ -595,8 +602,10 @@ contract RebateHandlerTest is Test {
         assertEq(rebateHandler.timeElapsedForUpdate(), 24 hours);
         vm.prank(owner);
         rebateHandler.updateTimeElapsedForUpdate(25 hours);
-        vm.startPrank(owner);
+        vm.prank(owner);
         rebateToken.transfer(address(rebateHandler), 1000 ether);
+
+        vm.startPrank(merkleRootAdmin);
         rebateHandler.updateMerkleRoot(
             distributions[0].merkleRoot,
             distributions[0].amounts[0] +
@@ -649,5 +658,91 @@ contract RebateHandlerTest is Test {
         vm.prank(owner);
         rebateHandler.transferOwnership(newAdmin);
         assertEq(rebateHandler.owner(), newAdmin);
+    }
+
+    function testChangeMerkleRootAdmin() external {
+        address newMerkleRootAdmin = address(0x55);
+        assertEq(rebateHandler.owner(), owner);
+        vm.prank(owner);
+        rebateHandler.updateMerkleRootAdmin(newMerkleRootAdmin);
+        assertEq(rebateHandler.merkleRootAdmin(), newMerkleRootAdmin);
+    }
+
+    function testRevertNonAdminChangeMerkleRootAdmin() external {
+        vm.prank(user1);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rebateHandler.updateMerkleRootAdmin(user1);
+    }
+
+    function testRevertChangeMerkleRootAdminCantBeOwner() external {
+        vm.prank(owner);
+        vm.expectRevert("_merkleRootAdmin can't be same as Owner");
+        rebateHandler.updateMerkleRootAdmin(owner);
+    }
+
+    function testRevertChangeMerkleRootAdminCantBeZero() external {
+        vm.prank(owner);
+        vm.expectRevert("_merkleRootAdmin can't be zero");
+        rebateHandler.updateMerkleRootAdmin(address(0));
+    }
+
+    function testErrorMsgUpdateMaxUsersToClaim() external {
+        vm.expectRevert("_maxUsersToClaim can't be 0");
+        vm.prank(owner);
+        rebateHandler.updateMaxUsersToClaim(0);
+    }
+
+    function testErrorMsgUpdateTimeElapsed() external {
+        vm.expectRevert("_timeElapsedForUpdate can't be 0");
+        vm.prank(owner);
+        rebateHandler.updateTimeElapsedForUpdate(0);
+    }
+
+    function testErrorMsgUpdateTimeToReclaimRewardsm() external {
+        vm.expectRevert("_timeToReclaimRewards can't be 0");
+        vm.prank(owner);
+        rebateHandler.updateTimeToReclaimRewards(0);
+        uint256 _timeElapsedForUpdate = rebateHandler.timeElapsedForUpdate();
+        vm.expectRevert("value less than timeElapsedForUpdate");
+        vm.prank(owner);
+        rebateHandler.updateTimeToReclaimRewards(_timeElapsedForUpdate);
+    }
+
+    function testDistributionWithDataFromApi() external {
+        bytes32 _merkleRoot = bytes32(
+            0x75d7c1117cb5689bf74e8bc2ec11d000908793bd33ef33c9387f7fc6f82ea1a1
+        );
+        vm.prank(owner);
+        rebateToken.transfer(address(rebateHandler), 10000 ether);
+        vm.prank(merkleRootAdmin);
+        rebateHandler.updateMerkleRoot(_merkleRoot, 10000 ether);
+        address _user1 = address(0x4379F61909Fe62D28CC4a12Ae3c2b9046D530d88);
+        uint256 claimAmount = 8605440836294728661434;
+        bytes32[] memory _proof = new bytes32[](7);
+        _proof[0] = bytes32(
+            0x48e94ec8506a454f3ee4ad08f31ffcc31d8364c9ace0fccda6d83594caef6efd
+        );
+        _proof[1] = bytes32(
+            0xfa73bbec419cf23811bebb4d10c97f067e7ab6ea4dedba2735d6e4c84c6b4f66
+        );
+        _proof[2] = bytes32(
+            0x67f5240ce7ef1f0db825967b2cd23efabea7cb2f7f956351f3064e7a0240ef4d
+        );
+        _proof[3] = bytes32(
+            0x89ee6b50068a309f6f7187f8de878e5c9379c82ce074df994a60425cb2c867ed
+        );
+        _proof[4] = bytes32(
+            0xce6c65ea2bb9f3b98c20ca219b11d605a59e88e4020a934347467650da5b881e
+        );
+        _proof[5] = bytes32(
+            0xaf78c896fdb010bc6b099ba031f1198ee557980d6519b715322b4adf72a99906
+        );
+        _proof[6] = bytes32(
+            0x0948dd3e6ec9facb3a83048d525547a6282a1a339e8cc08f4d9111e490f88a48
+        );
+        assertEq(rebateToken.balanceOf(_user1), 0);
+        vm.prank(_user1);
+        rebateHandler.claimReward(_proof, claimAmount);
+        assertEq(rebateToken.balanceOf(_user1), claimAmount);
     }
 }
