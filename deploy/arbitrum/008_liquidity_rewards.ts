@@ -4,7 +4,7 @@ import { Deployment } from "hardhat-deploy/dist/types";
 import { hardhatArguments } from "hardhat";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  if (hardhatArguments.network !== "arbitrumGoerli") {
+  if (hardhatArguments.network !== "arbitrum") {
     return;
   }
 
@@ -12,9 +12,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy, get, getOrNull, getNetworkName } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const rewardToken = "0x6775842AE82BF2F0f987b10526768Ad89d79536E";
-  let stakingToken = (await get("TCAPVaultAlpha_Proxy")).address;
-  let cryptexMultisigAddress = "0xEA8b3DF14B0bad2F6DD0Ed847DCc54Fc100e40C3";
+  const rewardToken = "0x84F5c2cFba754E76DD5aE4fB369CfC920425E12b";
+  let stakingToken = "0xEa281a4c70Ee2ef5ce3ED70436C81C0863A3a75a";
+  let cryptexMultisigAddress = "0x8705b41F9193f05ba166a1D5C0771E9cB2Ca0aa3";
 
   await deploy("LiquidityReward", {
     contract: "LiquidityReward",
