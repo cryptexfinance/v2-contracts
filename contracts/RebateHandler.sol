@@ -139,6 +139,16 @@ contract RebateHandler is IRebateHandler, Ownable {
         rebateToken.safeTransfer(account, rebateToken.balanceOf(address(this)));
     }
 
+    /// @notice allows admin to update merkleRootAdmin variable
+    /// @param _merkleRootAdmin new merkleRootAdmin value.
+    function updateMerkleRootAdmin(
+        address _merkleRootAdmin
+    ) external onlyOwner {
+        require(_merkleRootAdmin != address(0), "_merkleRootAdmin can't be zero");
+        require(_merkleRootAdmin != owner(), "_merkleRootAdmin can't be same as Owner");
+        merkleRootAdmin = _merkleRootAdmin;
+    }
+
     /// @notice allows admin to update maxUsersToClaim variable.
     /// @param _maxUsersToClaim new maxUsersToClaim value.
     function updateMaxUsersToClaim(

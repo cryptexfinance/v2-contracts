@@ -660,6 +660,32 @@ contract RebateHandlerTest is Test {
         assertEq(rebateHandler.owner(), newAdmin);
     }
 
+    function testChangeMerkleRootAdmin() external {
+        address newMerkleRootAdmin = address(0x55);
+        assertEq(rebateHandler.owner(), owner);
+        vm.prank(owner);
+        rebateHandler.updateMerkleRootAdmin(newMerkleRootAdmin);
+        assertEq(rebateHandler.merkleRootAdmin(), newMerkleRootAdmin);
+    }
+
+    function testRevertNonAdminChangeMerkleRootAdmin() external {
+        vm.prank(user1);
+        vm.expectRevert("Ownable: caller is not the owner");
+        rebateHandler.updateMerkleRootAdmin(user1);
+    }
+
+    function testRevertChangeMerkleRootAdminCantBeOwner() external {
+        vm.prank(owner);
+        vm.expectRevert("_merkleRootAdmin can't be same as Owner");
+        rebateHandler.updateMerkleRootAdmin(owner);
+    }
+
+    function testRevertChangeMerkleRootAdminCantBeZero() external {
+        vm.prank(owner);
+        vm.expectRevert("_merkleRootAdmin can't be zero");
+        rebateHandler.updateMerkleRootAdmin(address(0));
+    }
+
     function testErrorMsgUpdateMaxUsersToClaim() external {
         vm.expectRevert("_maxUsersToClaim can't be 0");
         vm.prank(owner);
