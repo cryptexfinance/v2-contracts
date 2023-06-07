@@ -11,7 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts, ethers } = hre;
   const { deploy, get, getOrNull, getNetworkName } = deployments;
   const { deployer } = await getNamedAccounts();
-  const deployerSigner: SignerWithAddress = await ethers.getSigner(deployer);
+  const deployerSigner = await ethers.getSigner(deployer);
 
   const rebateTokenAddress = "0x912ce59144191c1204e64559fe8253a0e49e6548"; // ARB Token
   const owner = "0x8705b41F9193f05ba166a1D5C0771E9cB2Ca0aa3"; // Arbitrum Multisig

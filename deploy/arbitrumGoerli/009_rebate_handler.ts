@@ -11,7 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts, ethers } = hre;
   const { deploy, get, getOrNull, getNetworkName } = deployments;
   const { deployer } = await getNamedAccounts();
-  const deployerSigner: SignerWithAddress = await ethers.getSigner(deployer);
+  const deployerSigner = await ethers.getSigner(deployer);
 
   const rebateTokenAddress = "0x6775842AE82BF2F0f987b10526768Ad89d79536E";
   const owner = "0xEA8b3DF14B0bad2F6DD0Ed847DCc54Fc100e40C3";
