@@ -541,9 +541,12 @@ contract ReferralHandlerTest is Test {
 
     function testUpdateTimeElapsedForUpdate() external {
         assertEq(referralHandler.timeElapsedForUpdate(), timeElapsedForUpdate);
+        assertEq(referralHandler.lastUpdatedTimeElapsed(), block.timestamp);
+        vm.warp(7 days + 1 hours);
         vm.prank(owner);
         referralHandler.updateTimeElapsedForUpdate(25 hours);
         assertEq(referralHandler.timeElapsedForUpdate(), 25 hours);
+        assertEq(referralHandler.lastUpdatedTimeElapsed(), 7 days + 1 hours);
     }
 
     function testRevertNonAdminUpdateTimeElapsedForUpdate() external {
@@ -552,13 +555,23 @@ contract ReferralHandlerTest is Test {
         referralHandler.updateTimeElapsedForUpdate(25 hours);
     }
 
+    function testRevertUpdateTimeElapsedForUpdateWhenLessThanElapsed()
+        external
+    {
+        vm.startPrank(owner);
+        vm.expectRevert("Cannot update before timeElapsedForUpdate ends");
+        referralHandler.updateTimeElapsedForUpdate(23 hours);
+    }
+
     function testUpdateTimeElapsedForUpdateWorks() external {
         assertEq(referralHandler.timeElapsedForUpdate(), timeElapsedForUpdate);
-        vm.prank(owner);
+        vm.startPrank(owner);
+        vm.expectRevert("Cannot update before timeElapsedForUpdate ends");
         referralHandler.updateTimeElapsedForUpdate(25 hours);
-        vm.prank(owner);
+        vm.warp(7 days + 1 hours);
+        referralHandler.updateTimeElapsedForUpdate(25 hours);
         rewardToken.transfer(address(referralHandler), 1000 ether);
-
+        vm.stopPrank();
         vm.startPrank(merkleRootAdmin);
         referralHandler.updateMerkleRoot(
             distributions[0].merkleRoot,

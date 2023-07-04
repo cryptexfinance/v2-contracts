@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-
 import "./interfaces/IRebateHandler.sol";
 
 /**
@@ -15,11 +14,8 @@ import "./interfaces/IRebateHandler.sol";
  *
  * The merkle root can be updated by the admin only if block.timestamp >= _timeElapsedForUpdate.
  *
- * Rewards will be claimed on a first cum first serve basis until the total amount claimed
+ * Rewards will be claimed on a first come first serve basis until the total amount claimed
  * is less than the cap set for the ongoing epoch.
- *
- * There is also a cap on the total number of users that can claim tokens in a given epoch.
- * This is done because of gas limitation while resetting the addressExists variable.
  *
  * Admin can reclaim unused rewards after a certain amount of inactivity
  */
@@ -29,16 +25,18 @@ contract ReferralHandler is IRebateHandler, Ownable {
     /// @notice nonce updated each time a new epoch starts
     /// @dev as a merkle root update is needed to start the rewards, the initial nonce is 1
     uint256 private epochNonce;
-    /// @notice This mapping is used to check if an address has already claimed amount.
+    /// @notice This mapping is used to check if an address has already claimed amount. The nonce is used to reset the mapping with a lower gas cost.
     mapping(uint256 => mapping(address => bool)) public addressExists;
     /// @notice Address of the token used to give rebates.
     IERC20 public immutable rewardToken;
-    /// @notice Address that can update the merkel root
+    /// @notice Address that can update the merkle root
     address public merkleRootAdmin;
     /// @notice The merkle root of the distribution for the current epoch.
     bytes32 public merkleRoot;
     /// @notice The time when the merkleRoot was updated.
     uint256 public lastUpdated;
+    /// @notice The time when the timeElapsedForUpdate was updated.
+     uint256 public lastUpdatedTimeElapsed;
     /// @notice The time after which the merkle root can be updated.
     uint256 public timeElapsedForUpdate;
     /// @notice The maximum amount of tokens that can be claimed in a given epoch.
@@ -78,6 +76,7 @@ contract ReferralHandler is IRebateHandler, Ownable {
         merkleRootAdmin = _merkleRootAdmin;
         timeElapsedForUpdate = _timeElapsedForUpdate;
         timeToReclaimRewards = _timeToReclaimRewards;
+        lastUpdatedTimeElapsed = block.timestamp;
         transferOwnership(owner);
     }
 
@@ -106,7 +105,10 @@ contract ReferralHandler is IRebateHandler, Ownable {
     /// @inheritdoc IRebateHandler
     function claimReward(bytes32[] memory proof, uint256 amount) external {
         require(merkleRoot != bytes32(0), "Empty Merkle Root");
-        require(!addressExists[epochNonce][msg.sender], "Rebate already claimed");
+        require(
+            !addressExists[epochNonce][msg.sender],
+            "Rebate already claimed"
+        );
         uint256 amountLeftToClaim = maxAmountToClaim - amountClaimed;
         require(amountLeftToClaim > 0, "All rebates have been Claimed");
         require(_verifyProof(proof, msg.sender, amount), "Invalid Proof");
@@ -134,22 +136,35 @@ contract ReferralHandler is IRebateHandler, Ownable {
     function updateMerkleRootAdmin(
         address _merkleRootAdmin
     ) external onlyOwner {
-        require(_merkleRootAdmin != address(0), "_merkleRootAdmin can't be zero");
-        require(_merkleRootAdmin != owner(), "_merkleRootAdmin can't be same as Owner");
+        require(
+            _merkleRootAdmin != address(0),
+            "_merkleRootAdmin can't be zero"
+        );
+        require(
+            _merkleRootAdmin != owner(),
+            "_merkleRootAdmin can't be same as Owner"
+        );
         merkleRootAdmin = _merkleRootAdmin;
     }
 
     /// @notice allows admin to update timeElapsedForUpdate variable
     /// @param _timeElapsedForUpdate new timeElapsedForUpdate value.
+    /// @dev don't allow to update unless previous time has passed
     function updateTimeElapsedForUpdate(
         uint256 _timeElapsedForUpdate
     ) external onlyOwner {
         require(_timeElapsedForUpdate != 0, "_timeElapsedForUpdate can't be 0");
+        require(
+            (block.timestamp - lastUpdatedTimeElapsed >= timeElapsedForUpdate),
+            "Cannot update before timeElapsedForUpdate ends"
+        );
+        lastUpdatedTimeElapsed = block.timestamp;
         timeElapsedForUpdate = _timeElapsedForUpdate;
     }
 
     /// @notice allows admin to update timeToReclaimRewards variable
     /// @param _timeToReclaimRewards new timeToReclaimRewards value.
+    /// TODO: admin can manipulate this, add a check on times
     function updateTimeToReclaimRewards(
         uint256 _timeToReclaimRewards
     ) external onlyOwner {
@@ -162,7 +177,7 @@ contract ReferralHandler is IRebateHandler, Ownable {
     }
 
     function _resetAddressExists() internal {
-       epochNonce++;
+        epochNonce++;
     }
 
     function _verifyProof(
