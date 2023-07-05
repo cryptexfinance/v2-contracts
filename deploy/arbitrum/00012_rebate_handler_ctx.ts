@@ -22,6 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const timeToReclaimRewards = 3 * 24 * 60 * 60; // 3 days
 
   const rebateHandler = await deploy("RebateHandlerCTX", {
+    contract:"RebateHandler",
     args: [
       rebateTokenAddress,
       owner,
