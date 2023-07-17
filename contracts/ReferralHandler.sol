@@ -25,7 +25,7 @@ contract ReferralHandler is IRebateHandler, Ownable {
     /// @notice nonce updated each time a new epoch starts
     /// @dev as a merkle root update is needed to start the rewards, the initial nonce is 1
     uint256 private epochNonce;
-    /// @notice This mapping is used to check if an address has already claimed amount. The nonce is used to reset the mapping with a lower gas cost.
+    /// @notice This mapping is used to check if an address has already claimed amount. Every epoch has unique nonce.
     mapping(uint256 => mapping(address => bool)) public addressExists;
     /// @notice Address of the token used to give rebates.
     IERC20 public immutable rewardToken;
@@ -43,7 +43,7 @@ contract ReferralHandler is IRebateHandler, Ownable {
     uint256 public maxAmountToClaim;
     /// @notice the number of tokens claimed in a given epoch.
     uint256 public amountClaimed;
-    /// @notice the time after which an admin claim unused rewards.
+    /// @notice the time after which an admin can claim unused rewards.
     uint256 public timeToReclaimRewards;
 
     /**
@@ -95,7 +95,7 @@ contract ReferralHandler is IRebateHandler, Ownable {
             "Balance less than maxAmountToClaim"
         );
         lastUpdated = block.timestamp;
-        _resetAddressExists();
+        epochNonce++;
         amountClaimed = 0;
         maxAmountToClaim = _maxAmountToClaim;
         merkleRoot = _merkleRoot;
@@ -107,10 +107,10 @@ contract ReferralHandler is IRebateHandler, Ownable {
         require(merkleRoot != bytes32(0), "Empty Merkle Root");
         require(
             !addressExists[epochNonce][msg.sender],
-            "Rebate already claimed"
+            "Reward already claimed"
         );
         uint256 amountLeftToClaim = maxAmountToClaim - amountClaimed;
-        require(amountLeftToClaim > 0, "All rebates have been Claimed");
+        require(amountLeftToClaim > 0, "All rewards have been Claimed");
         require(_verifyProof(proof, msg.sender, amount), "Invalid Proof");
         addressExists[epochNonce][msg.sender] = true;
         uint256 ClaimableAmount = amount < amountLeftToClaim
@@ -174,10 +174,6 @@ contract ReferralHandler is IRebateHandler, Ownable {
             "value less than timeElapsedForUpdate"
         );
         timeToReclaimRewards = _timeToReclaimRewards;
-    }
-
-    function _resetAddressExists() internal {
-        epochNonce++;
     }
 
     function _verifyProof(
