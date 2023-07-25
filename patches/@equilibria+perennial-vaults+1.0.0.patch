@@ -1,0 +1,13 @@
+diff --git a/node_modules/@equilibria/perennial-vaults/contracts/BalancedVault.sol b/node_modules/@equilibria/perennial-vaults/contracts/BalancedVault.sol
+index 796f2b2..5f6aec4 100644
+--- a/node_modules/@equilibria/perennial-vaults/contracts/BalancedVault.sol
++++ b/node_modules/@equilibria/perennial-vaults/contracts/BalancedVault.sol
+@@ -439,7 +439,7 @@ contract BalancedVault is IBalancedVault, UInitializable {
+ 
+         if (targetPosition.lt(currentPosition))
+             product.closeMake(currentPosition.sub(targetPosition));
+-        if (targetPosition.gt(currentPosition))
++        if (targetPosition.gte(currentPosition))
+             product.openMake(targetPosition.sub(currentPosition).min(makerAvailable));
+ 
+         emit PositionUpdated(product, targetPosition);
