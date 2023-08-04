@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const owner = "0x8705b41F9193f05ba166a1D5C0771E9cB2Ca0aa3"; // Arbitrum Multisig
   // Please make sure that owner!=merkleRootAdmin on mainnet
   const merkleRootAdmin = "0xE7A4B3A6db8607Ebc8407f739a1D0D6A3167Bb94";
-  const timeElapsedForUpdate = 30 * 24 * 60 * 60; // 30 days to update rewards
+  const timeElapsedForUpdate = 28 * 24 * 60 * 60; // 30 days to update rewards
   const timeToReclaimRewards = 60 * 24 * 60 * 60; // 60 days for Multisig to claim rewards
 
   const referralHandler = await deploy("ReferralHandler", {
