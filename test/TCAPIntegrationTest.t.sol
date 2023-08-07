@@ -29,7 +29,7 @@ import "../contracts/mocks/TestnetBatcher.sol";
 import "../contracts/mocks/ChainlinkTCAPAggregatorV3.sol";
 import "../contracts/TcapPayoffProvider.sol";
 
-contract IntegrationTest is Test {
+contract TCAPIntegrationTest is Test {
     TestnetUSDC USDC;
     TestnetDSU DSU;
     TestnetReserve reserve;
