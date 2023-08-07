@@ -41,8 +41,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     return;
   }
 
-  let name = "PEPE";
-  let symbol = "PEPE";
+  let name = "PEPE Perpetual Market";
+  let symbol = "PERPE";
 
   const productInfo: IProduct.ProductInfoStruct = {
     name: name,
