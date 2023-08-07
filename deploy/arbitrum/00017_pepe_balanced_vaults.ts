@@ -20,17 +20,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts();
   const deployerSigner: SignerWithAddress = await ethers.getSigner(deployer);
 
-  const VAULT_TOKEN_NAME = "PEPE Vault Alpha";
+  const VAULT_TOKEN_NAME = "PERPE Vault Alpha";
   const VAULT_TOKEN_SYMBOL = "PVA";
 
   const dsu = "0x52C64b8998eB7C80b6F526E99E29ABdcC86B841b";
   const controller = "0xa59ef0208418559770a48d7ae4f260a28763167b";
-  const long = (await get("Product_PEPE_Long")).address;
-  const short = (await get("Product_PEPE_Short")).address;
+  const long = (await get("Product_PERPE_Long")).address;
+  const short = (await get("Product_PERPE_Short")).address;
   const targetLeverage = ethers.utils.parseEther("2");
   const maxCollateral = ethers.utils.parseEther("3000000");
 
-  const vaultImpl = await deploy("PEPEVaultAlpha_Impl", {
+  const vaultImpl = await deploy("PERPEVaultAlpha_Impl", {
     contract: "BalancedVault",
     args: [dsu, controller, long, short, targetLeverage, maxCollateral],
     from: deployer,
@@ -41,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const proxyAdminAddress = (await get("ProxyAdmin")).address;
 
-  await deploy("PEPEVaultAlpha_Proxy", {
+  await deploy("PERPEVaultAlpha_Proxy", {
     contract: "TransparentUpgradeableProxy",
     args: [vaultImpl.address, proxyAdminAddress, "0x"],
     from: deployer,
@@ -51,7 +51,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   const vault = new BalancedVault__factory(deployerSigner).attach(
-    (await get("PEPEVaultAlpha_Proxy")).address
+    (await get("PERPEVaultAlpha_Proxy")).address
   );
   if ((await vault.name()) === VAULT_TOKEN_NAME) {
     console.log("PEPE Vault Alpha already initialized.");
