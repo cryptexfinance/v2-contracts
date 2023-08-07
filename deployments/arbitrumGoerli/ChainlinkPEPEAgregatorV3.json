@@ -1,0 +1,230 @@
+{
+  "address": "0x4c4cb8e605DCDC572Ef6e98EB5bb95F4e01DC371",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "RoundIdMissing",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "decimals",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint80",
+          "name": "_roundId",
+          "type": "uint80"
+        }
+      ],
+      "name": "getRoundData",
+      "outputs": [
+        {
+          "internalType": "uint80",
+          "name": "roundId",
+          "type": "uint80"
+        },
+        {
+          "internalType": "int256",
+          "name": "answer",
+          "type": "int256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "updatedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint80",
+          "name": "answeredInRound",
+          "type": "uint80"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "latestRoundData",
+      "outputs": [
+        {
+          "internalType": "uint80",
+          "name": "roundId",
+          "type": "uint80"
+        },
+        {
+          "internalType": "int256",
+          "name": "answer",
+          "type": "int256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "updatedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint80",
+          "name": "answeredInRound",
+          "type": "uint80"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "next",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x0cb35bd7dbb65ecaefa9831577d31b2717e3a2d4794ba1a23b1caadd21f59e0f",
+  "receipt": {
+    "to": null,
+    "from": "0xEA8b3DF14B0bad2F6DD0Ed847DCc54Fc100e40C3",
+    "contractAddress": "0x4c4cb8e605DCDC572Ef6e98EB5bb95F4e01DC371",
+    "transactionIndex": 1,
+    "gasUsed": "447419",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xa4f8bbd5be2d005330ba0a414d9f9f74f97313017a65a559ce3ad729d53e630e",
+    "transactionHash": "0x0cb35bd7dbb65ecaefa9831577d31b2717e3a2d4794ba1a23b1caadd21f59e0f",
+    "logs": [],
+    "blockNumber": 33285337,
+    "cumulativeGasUsed": "447419",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "1c48fa1f679f95de0e62fa1960a2390a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"RoundIdMissing\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint80\",\"name\":\"_roundId\",\"type\":\"uint80\"}],\"name\":\"getRoundData\",\"outputs\":[{\"internalType\":\"uint80\",\"name\":\"roundId\",\"type\":\"uint80\"},{\"internalType\":\"int256\",\"name\":\"answer\",\"type\":\"int256\"},{\"internalType\":\"uint256\",\"name\":\"startedAt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"updatedAt\",\"type\":\"uint256\"},{\"internalType\":\"uint80\",\"name\":\"answeredInRound\",\"type\":\"uint80\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"latestRoundData\",\"outputs\":[{\"internalType\":\"uint80\",\"name\":\"roundId\",\"type\":\"uint80\"},{\"internalType\":\"int256\",\"name\":\"answer\",\"type\":\"int256\"},{\"internalType\":\"uint256\",\"name\":\"startedAt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"updatedAt\",\"type\":\"uint256\"},{\"internalType\":\"uint80\",\"name\":\"answeredInRound\",\"type\":\"uint80\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"next\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/mocks/ChainlinkPEPEAgregatorV3.sol\":\"ChainlinkPEPEAgregatorV3\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/mocks/ChainlinkPEPEAgregatorV3.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.13;\\n\\ncontract ChainlinkPEPEAgregatorV3 {\\n    struct RoundData {\\n        uint80 roundId;\\n        uint80 answeredInRound;\\n        int256 answer;\\n        uint256 startedAt;\\n        uint256 updatedAt;\\n    }\\n    mapping(uint80 => RoundData) roundDataHistory;\\n    error RoundIdMissing();\\n\\n    RoundData _latestRoundData =\\n        RoundData({\\n            roundId: uint80(18446744073709552339),\\n            answer: int256(1149380144353),\\n            startedAt: uint256(1691400402),\\n            updatedAt: uint256(1691400402),\\n            answeredInRound: uint80(18446744073709552339)\\n        });\\n\\n    constructor() {\\n        roundDataHistory[_latestRoundData.roundId] = _latestRoundData;\\n    }\\n\\n    function decimals() external view returns (uint8) {\\n        return uint8(8);\\n    }\\n\\n    function getRoundData(\\n        uint80 _roundId\\n    )\\n        external\\n        view\\n        returns (\\n            uint80 roundId,\\n            int256 answer,\\n            uint256 startedAt,\\n            uint256 updatedAt,\\n            uint80 answeredInRound\\n        )\\n    {\\n        RoundData memory roundData = roundDataHistory[_roundId];\\n        if (roundData.roundId != _roundId) revert RoundIdMissing();\\n        roundId = _roundId;\\n        answer = roundData.answer;\\n        startedAt = roundData.startedAt;\\n        updatedAt = roundData.updatedAt;\\n        answeredInRound = roundData.answeredInRound;\\n    }\\n\\n    function latestRoundData()\\n        external\\n        view\\n        returns (\\n            uint80 roundId,\\n            int256 answer,\\n            uint256 startedAt,\\n            uint256 updatedAt,\\n            uint80 answeredInRound\\n        )\\n    {\\n        roundId = _latestRoundData.roundId;\\n        answer = _latestRoundData.answer;\\n        startedAt = _latestRoundData.startedAt;\\n        updatedAt = _latestRoundData.updatedAt;\\n        answeredInRound = _latestRoundData.answeredInRound;\\n    }\\n\\n    function next() external {\\n        _latestRoundData.roundId = _latestRoundData.roundId + 1;\\n        _latestRoundData.answer = (_latestRoundData.answer * 101) / 100;\\n        _latestRoundData.startedAt = _latestRoundData.startedAt + 1000;\\n        _latestRoundData.updatedAt = _latestRoundData.updatedAt + 1000;\\n        _latestRoundData.answeredInRound = _latestRoundData.answeredInRound + 1;\\n        roundDataHistory[_latestRoundData.roundId] = _latestRoundData;\\n    }\\n}\\n\",\"keccak256\":\"0x0f29f5c1757f0469c73aa9b09f0f183b74c6e0ec2ec2b1567649e635ef240224\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x610120604052680100000000000002d3608081905260a05265010b9c652ce160c08190526364d0b8d260e0819052610100819052600180546001600160a01b031916720100000000000002d3000100000000000002d3179055600291909155600381905560045534801561007257600080fd5b50600180546001600160501b03908116600081815260208190526040902080546001600160501b031981168317825584546a0100000000000000000000908190049094169093026001600160a01b0319909316909117919091178155600280549282019290925560038054928201929092556004549101556103db806100f96000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c8063313ce567146100515780634c8fe526146100655780639a6fc8f51461006f578063feaf968c146100b6575b600080fd5b604051600881526020015b60405180910390f35b61006d6100db565b005b61008261007d3660046102b3565b610209565b604080516001600160501b03968716815260208101959095528401929092526060830152909116608082015260a00161005c565b6001546002546003546004546001600160501b0380851694600160501b900416610082565b600180546100f4916001600160501b03909116906102f9565b6001805469ffffffffffffffffffff19166001600160501b0392909216919091179055600254606490610128906065610320565b6101329190610356565b600255600354610144906103e8610392565b600355600454610156906103e8610392565b6004556001805461017891600160501b9091046001600160501b0316906102f9565b6001805469ffffffffffffffffffff60501b198116600160501b6001600160501b0394851681029182178455918416908416176000818152602081905260409020805469ffffffffffffffffffff1981168317825584546001600160a01b03199091169092179183900490941690910217825560028054918301919091556003805491830191909155600454910155565b6001600160501b03808216600081815260208181526040808320815160a0810183528154808816808352600160501b9091049097169381019390935260018101549183019190915260028101546060830152600301546080820152909283928392839283921461028c576040516337a2af4960e11b815260040160405180910390fd5b60408101516060820151608083015160209093015198999198909750919550909350915050565b6000602082840312156102c557600080fd5b81356001600160501b03811681146102dc57600080fd5b9392505050565b634e487b7160e01b600052601160045260246000fd5b6001600160501b03818116838216019080821115610319576103196102e3565b5092915050565b80820260008212600160ff1b8414161561033c5761033c6102e3565b8181058314821517610350576103506102e3565b92915050565b60008261037357634e487b7160e01b600052601260045260246000fd5b600160ff1b82146000198414161561038d5761038d6102e3565b500590565b80820180821115610350576103506102e356fea2646970667358221220b87a0ce7afdc5575825c36c057a9b5e6d72792fe209e5f26c098693ccc64567464736f6c63430008110033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c8063313ce567146100515780634c8fe526146100655780639a6fc8f51461006f578063feaf968c146100b6575b600080fd5b604051600881526020015b60405180910390f35b61006d6100db565b005b61008261007d3660046102b3565b610209565b604080516001600160501b03968716815260208101959095528401929092526060830152909116608082015260a00161005c565b6001546002546003546004546001600160501b0380851694600160501b900416610082565b600180546100f4916001600160501b03909116906102f9565b6001805469ffffffffffffffffffff19166001600160501b0392909216919091179055600254606490610128906065610320565b6101329190610356565b600255600354610144906103e8610392565b600355600454610156906103e8610392565b6004556001805461017891600160501b9091046001600160501b0316906102f9565b6001805469ffffffffffffffffffff60501b198116600160501b6001600160501b0394851681029182178455918416908416176000818152602081905260409020805469ffffffffffffffffffff1981168317825584546001600160a01b03199091169092179183900490941690910217825560028054918301919091556003805491830191909155600454910155565b6001600160501b03808216600081815260208181526040808320815160a0810183528154808816808352600160501b9091049097169381019390935260018101549183019190915260028101546060830152600301546080820152909283928392839283921461028c576040516337a2af4960e11b815260040160405180910390fd5b60408101516060820151608083015160209093015198999198909750919550909350915050565b6000602082840312156102c557600080fd5b81356001600160501b03811681146102dc57600080fd5b9392505050565b634e487b7160e01b600052601160045260246000fd5b6001600160501b03818116838216019080821115610319576103196102e3565b5092915050565b80820260008212600160ff1b8414161561033c5761033c6102e3565b8181058314821517610350576103506102e3565b92915050565b60008261037357634e487b7160e01b600052601260045260246000fd5b600160ff1b82146000198414161561038d5761038d6102e3565b500590565b80820180821115610350576103506102e356fea2646970667358221220b87a0ce7afdc5575825c36c057a9b5e6d72792fe209e5f26c098693ccc64567464736f6c63430008110033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 15594,
+        "contract": "contracts/mocks/ChainlinkPEPEAgregatorV3.sol:ChainlinkPEPEAgregatorV3",
+        "label": "roundDataHistory",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_uint80,t_struct(RoundData)15589_storage)"
+      },
+      {
+        "astId": 15621,
+        "contract": "contracts/mocks/ChainlinkPEPEAgregatorV3.sol:ChainlinkPEPEAgregatorV3",
+        "label": "_latestRoundData",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_struct(RoundData)15589_storage"
+      }
+    ],
+    "types": {
+      "t_int256": {
+        "encoding": "inplace",
+        "label": "int256",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_uint80,t_struct(RoundData)15589_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint80",
+        "label": "mapping(uint80 => struct ChainlinkPEPEAgregatorV3.RoundData)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RoundData)15589_storage"
+      },
+      "t_struct(RoundData)15589_storage": {
+        "encoding": "inplace",
+        "label": "struct ChainlinkPEPEAgregatorV3.RoundData",
+        "members": [
+          {
+            "astId": 15580,
+            "contract": "contracts/mocks/ChainlinkPEPEAgregatorV3.sol:ChainlinkPEPEAgregatorV3",
+            "label": "roundId",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint80"
+          },
+          {
+            "astId": 15582,
+            "contract": "contracts/mocks/ChainlinkPEPEAgregatorV3.sol:ChainlinkPEPEAgregatorV3",
+            "label": "answeredInRound",
+            "offset": 10,
+            "slot": "0",
+            "type": "t_uint80"
+          },
+          {
+            "astId": 15584,
+            "contract": "contracts/mocks/ChainlinkPEPEAgregatorV3.sol:ChainlinkPEPEAgregatorV3",
+            "label": "answer",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_int256"
+          },
+          {
+            "astId": 15586,
+            "contract": "contracts/mocks/ChainlinkPEPEAgregatorV3.sol:ChainlinkPEPEAgregatorV3",
+            "label": "startedAt",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 15588,
+            "contract": "contracts/mocks/ChainlinkPEPEAgregatorV3.sol:ChainlinkPEPEAgregatorV3",
+            "label": "updatedAt",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256"
+          }
+        ],
+        "numberOfBytes": "128"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      },
+      "t_uint80": {
+        "encoding": "inplace",
+        "label": "uint80",
+        "numberOfBytes": "10"
+      }
+    }
+  }
+}
