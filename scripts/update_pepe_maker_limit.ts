@@ -11,8 +11,8 @@ async function main() {
   const deployerSigner: SignerWithAddress = await ethers.getSigner(deployer);
 
   const makerLimit = ethers.utils.parseEther("60000000000000");
-  const longAddress = (await get("Product_PEPE_Long")).address;
-  const shortAddress = (await get("Product_PEPE_Short")).address;
+  const longAddress = (await get("Product_PERPE_Long")).address;
+  const shortAddress = (await get("Product_PERPE_Short")).address;
   const long = IProduct__factory.connect(longAddress, deployerSigner);
   const short = IProduct__factory.connect(shortAddress, deployerSigner);
 
