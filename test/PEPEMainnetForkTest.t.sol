@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"
 import "@equilibria/perennial/contracts/multiinvoker/MultiInvoker.sol";
 
 
-contract TCAPPerennialForkTest is Test {
+contract PEPEPerennialForkTest is Test {
 
     uint256 coordinatorId =  2;
     Controller controller = Controller(0xA59eF0208418559770a48D7ae4f260A28763167B);
@@ -36,6 +36,8 @@ contract TCAPPerennialForkTest is Test {
 
     address userA = address(0x51);
     address userB = address(0x52);
+
+    event Deposit(address indexed sender, address indexed account, uint256 version, UFixed18 assets);
 
     function setUp() external {
         vm.deal(userA, 30000 ether);
@@ -84,15 +86,24 @@ contract TCAPPerennialForkTest is Test {
         depositWrapAndDeposit(userA, long, depositAmount);
         depositWrapAndDeposit(userA, short, depositAmount);
 
-        address owner = controller.owner(coordinatorId);
-        vm.startPrank(owner);
-        long.updateMakerLimit(UFixed18Lib.from(100000000));
-        short.updateMakerLimit(UFixed18Lib.from(100000000));
-        vm.stopPrank();
-
         vm.startPrank(userA);
         long.openMake(UFixed18Lib.from(1));
         short.openMake(UFixed18Lib.from(1));
+        vm.stopPrank();
+    }
+
+    function testVaultDeposit() external {
+        vm.startPrank(userA);
+        usdc.approve(address(invoker), UFixed18.unwrap(initialCollateral));
+        IMultiInvoker.Invocation[] memory invocations = new IMultiInvoker.Invocation[](1);
+        IMultiInvoker.Invocation memory invocation = IMultiInvoker.Invocation({
+            action: IMultiInvoker.PerennialAction.VAULT_WRAP_AND_DEPOSIT,
+            args: abi.encode(userA, vault, initialCollateral)
+        });
+        invocations[0] = invocation;
+        vm.expectEmit(true, true, true, true, address(vault));
+        emit Deposit(address(invoker), userA, long.currentVersion().version, initialCollateral);
+        invoker.invoke(invocations);
         vm.stopPrank();
     }
 
@@ -100,12 +111,6 @@ contract TCAPPerennialForkTest is Test {
         UFixed18 depositAmount = UFixed18Lib.from(20);
         depositWrapAndDeposit(userA, long, depositAmount);
         depositWrapAndDeposit(userB, long, depositAmount);
-
-        address owner = controller.owner(coordinatorId);
-        vm.startPrank(owner);
-        long.updateMakerLimit(UFixed18Lib.from(100000000));
-        short.updateMakerLimit(UFixed18Lib.from(100000000));
-        vm.stopPrank();
 
         vm.prank(userA);
         long.openMake(UFixed18Lib.from(2));
