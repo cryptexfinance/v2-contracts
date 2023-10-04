@@ -54,7 +54,7 @@ async function main() {
   console.log("Old makerFee for PERPE Short product is", await pepeShort.makerFee());
   console.log("Old takerFee for PERPE long product is", await pepeLong.takerFee());
   console.log("Old takerFee for PERPE Short product is", await pepeShort.takerFee());
-  let tx = await pepeLong.updateMakerFee(newMakerfee);
+  tx = await pepeLong.updateMakerFee(newMakerfee);
   await tx.wait();
   tx = await pepeShort.updateMakerFee(newMakerfee);
   await tx.wait();
